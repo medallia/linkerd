@@ -50,6 +50,12 @@ routers:
     httpUriInDst: true
   responseClassifier:
     kind: io.l5d.retryableIdempotent5XX
+  announcers:
+  - kind: io.l5d.serversets
+    zkAddrs:
+    - host: 127.0.0.1
+      port: 2181
+    pathPrefix: /discovery/prod
   client:
     loadBalancer:
       kind: p2c
@@ -62,6 +68,9 @@ routers:
   servers:
   - port: 4140
     ip: 0.0.0.0
+    label: foo/bar
+    announce:
+    - foo/bar
     maxConcurrentRequests: 1000
 
 # TODO: test thrift traffic

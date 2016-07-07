@@ -1,3 +1,6 @@
+* Add announcer support! linkerd can now announce to service discovery backends!
+  * Add zk announcer.
+
 ## 0.7.0
 
 * New default JVM settings scale up with traffic levels.
