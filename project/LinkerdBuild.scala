@@ -381,6 +381,15 @@ object LinkerdBuild extends Base {
         .aggregate(zipkin)
     }
 
+    object Announcer {
+      val serversets = projectDir("linkerd/announcer/serversets")
+        .withTwitterLib(Deps.finagle("serversets").exclude("org.slf4j", "slf4j-jdk14"))
+        .dependsOn(core)
+
+      val all = projectDir("linkerd/announcer")
+        .aggregate(serversets)
+    }
+
     val admin = projectDir("linkerd/admin")
       .withTwitterLib(Deps.twitterServer)
       .withTests()
@@ -437,7 +446,7 @@ object LinkerdBuild extends Base {
 
     val all = projectDir("linkerd")
       .settings(aggregateSettings)
-      .aggregate(admin, core, main, configCore, Namer.all, Protocol.all, Tracer.all, tls)
+      .aggregate(admin, core, main, configCore, Namer.all, Protocol.all, Tracer.all, Announcer.all, tls)
       .configs(Minimal, Bundle)
       // Minimal cofiguration includes a runtime, HTTP routing and the
       // fs service discovery.
@@ -450,6 +459,7 @@ object LinkerdBuild extends Base {
         Interpreter.namerd,
         Protocol.mux, Protocol.thrift,
         Tracer.zipkin,
+        Announcer.serversets,
         tls)
       .settings(inConfig(Bundle)(BundleSettings))
       .settings(
@@ -537,6 +547,8 @@ object LinkerdBuild extends Base {
   val linkerdProtocolThrift = Linkerd.Protocol.thrift
   val linkerdTracer = Linkerd.Tracer.all
   val linkerdTracerZipkin = Linkerd.Tracer.zipkin
+  val linkerdAnnouncer = Linkerd.Announcer.all
+  val linkerdAnnouncerServersets = Linkerd.Announcer.serversets
   val linkerdTls = Linkerd.tls
 
   // Unified documentation via the sbt-unidoc plugin

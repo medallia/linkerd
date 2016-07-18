@@ -1,3 +1,6 @@
+* Add announcer support! linkerd can now announce to service discovery backends!
+  * Add zk announcer.
+
 ## 0.7.1
 
 * Turn off HTTP decompression so that linkerd doesn't decompress and then
