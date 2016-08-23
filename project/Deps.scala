@@ -43,4 +43,7 @@ object Deps {
 
   // guava
   val guava = "com.google.guava" % "guava" % "19.0"
+
+  // curator service discovery
+  val curatorSD = "org.apache.curator" % "curator-x-discovery" % "2.11.0"
 }
