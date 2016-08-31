@@ -37,7 +37,7 @@ class CuratorSDAnnouncer(zkConnectStr: String, tenant: Option[String]) extends A
     tenant.map(t => serviceId + "." + t).getOrElse(serviceId)
 
   override def announce(addr: InetSocketAddress, name: Path): Future[Announcement] = {
-    val serviceId = name.toString();
+    val serviceId = name.take(1).show.stripPrefix("/") // TODO version could be the second element in the future
     log.info("Announcing %s %s %s %s", serviceId, tenant, addr, zkConnectStr)
 
     // TODO exception handling
