@@ -25,12 +25,10 @@ class CuratorSDAnnouncer(zkConnectStr: String, tenant: Option[String]) extends A
     .retryPolicy(new ExponentialBackoffRetry(1000, 3))
     .build
 
-  curatorClient.start
-
-  // TODO payload
   private val serviceDiscovery: ServiceDiscovery[String] = new ServiceDiscoveryImpl(curatorClient, "", new JsonInstanceSerializer[String](classOf[String]), null, false)
 
-  // TODO who closes?
+  // TODO close these two after the last service was unannounced?
+  curatorClient.start
   serviceDiscovery.start
 
   private def getServiceFullPath(serviceId: String, tenant: Option[String]): String =
@@ -43,7 +41,9 @@ class CuratorSDAnnouncer(zkConnectStr: String, tenant: Option[String]) extends A
     // TODO exception handling
     val builder: ServiceInstanceBuilder[String] = ServiceInstance.builder[String]
       .name(getServiceFullPath(serviceId, tenant))
-      .uriSpec(new UriSpec("http://" + addr.getHostString + ":" + addr.getPort)) // TODO how to specify https?
+      // TODO how to specify https? Handle this when we work on the Namer.
+      .uriSpec(new UriSpec("http://" + addr.getHostString + ":" + addr.getPort))
+      // TODO payload
       //          .payload(new ServiceInstanceInfo(description))
       .serviceType(ServiceType.DYNAMIC);
 
@@ -53,7 +53,6 @@ class CuratorSDAnnouncer(zkConnectStr: String, tenant: Option[String]) extends A
 
     log.info("Successfully announced %s %s %s %s", serviceId, tenant, addr, serviceInstance.getId)
 
-    // TODO verify who un-announces
     Future.value(new Announcement {
       def unannounce() = {
         log.info("Unannouncing %s %s %s", serviceId, tenant, addr)
