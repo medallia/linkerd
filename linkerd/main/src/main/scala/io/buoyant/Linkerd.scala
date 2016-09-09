@@ -7,6 +7,9 @@ import io.buoyant.linkerd.admin.LinkerdAdmin
 import io.buoyant.linkerd.{Build, Linker}
 import java.io.File
 
+import sun.misc.Signal
+import sun.misc.SignalHandler
+
 import scala.io.Source
 
 /**
@@ -20,13 +23,23 @@ object Linkerd extends App {
 
   protected[this] val graceFlag = flag("l5d.grace", 10, "Grace shutdown time (secs)")
 
+  val shutdownHandler: SignalHandler = new SignalHandler() {
+    def handle(sig: Signal): Unit = {
+      log.info("Closing all ...")
+      Await.result(close(Duration.fromSeconds(graceFlag())))
+      log.info("All closed.")
+    }
+  }
+
   def main() {
+    Signal.handle(new Signal("INT"), shutdownHandler)
+    Signal.handle(new Signal("TERM"), shutdownHandler)
+
     val build = Build.load(getClass.getResourceAsStream("/io/buoyant/linkerd-main/build.properties"))
     log.info("linkerd %s (rev=%s) built at %s", build.version, build.revision, build.name)
 
     args match {
       case Array(path) =>
-        sys.addShutdownHook(closeAndWait)
 
         val linkerConfig = loadLinker(path)
         val linker = linkerConfig.mk
@@ -83,9 +96,4 @@ object Linkerd extends App {
     Linker.parse(configText)
   }
 
-  private def closeAndWait(): Unit = {
-    println("Closing all ...")
-    Await.result(close(Duration.fromSeconds(graceFlag())))
-    println("All closed.")
-  }
 }
