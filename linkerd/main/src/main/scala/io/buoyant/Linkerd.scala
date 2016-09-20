@@ -21,20 +21,7 @@ import scala.io.Source
  */
 object Linkerd extends App {
 
-  protected[this] val graceFlag = flag("l5d.grace", 10, "Grace shutdown time (secs)")
-
-  val shutdownHandler: SignalHandler = new SignalHandler() {
-    def handle(sig: Signal): Unit = {
-      log.info("Closing all ...")
-      Await.result(close(Duration.fromSeconds(graceFlag())))
-      log.info("All closed.")
-    }
-  }
-
   def main() {
-    Signal.handle(new Signal("INT"), shutdownHandler)
-    Signal.handle(new Signal("TERM"), shutdownHandler)
-
     val build = Build.load(getClass.getResourceAsStream("/io/buoyant/linkerd-main/build.properties"))
     log.info("linkerd %s (rev=%s) built at %s", build.version, build.revision, build.name)
 
