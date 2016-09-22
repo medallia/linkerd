@@ -431,8 +431,13 @@ object LinkerdBuild extends Base {
         .withTwitterLib(Deps.finagle("serversets").exclude("org.slf4j", "slf4j-jdk14"))
         .dependsOn(core)
 
+      val curatorsd = projectDir("linkerd/announcer/curatorsd")
+        .withLib(Deps.curatorSD)
+        .dependsOn(core)
+
       val all = projectDir("linkerd/announcer")
         .aggregate(serversets)
+        .aggregate(curatorsd)
     }
 
     val admin = projectDir("linkerd/admin")
@@ -503,7 +508,7 @@ object LinkerdBuild extends Base {
         Namer.consul, Namer.k8s, Namer.marathon, Namer.serversets, Namer.zkLeader,
         Interpreter.namerd, Interpreter.fs, Interpreter.perHost, Interpreter.k8s,
         Protocol.mux, Protocol.thrift,
-        Announcer.serversets,
+        Announcer.serversets, Announcer.curatorsd,
         Telemetry.core, Telemetry.tracelog,
         Tracer.zipkin,
         tls)
@@ -605,6 +610,7 @@ object LinkerdBuild extends Base {
   val linkerdTracerZipkin = Linkerd.Tracer.zipkin
   val linkerdAnnouncer = Linkerd.Announcer.all
   val linkerdAnnouncerServersets = Linkerd.Announcer.serversets
+  val linkerdAnnouncerCuratorsd = Linkerd.Announcer.curatorsd
   val linkerdTls = Linkerd.tls
 
   // Unified documentation via the sbt-unidoc plugin
