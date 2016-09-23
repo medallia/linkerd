@@ -82,7 +82,7 @@ object Main extends App {
     }
 
     new Closable with CloseAwaitably {
-      private[this] val closer = Closable.sequence(Closable.all(servers: _*), router)
+      private[this] val closer = Closable.sequence(Closable.all(servers: _*), router, Closable.all(router.announcers.map(_._2): _*))
       def close(deadline: Time) = closeAwaitably { closer.close(deadline) }
     }
   }

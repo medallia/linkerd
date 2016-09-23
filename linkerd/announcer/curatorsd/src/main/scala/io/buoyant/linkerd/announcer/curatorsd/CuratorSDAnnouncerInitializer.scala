@@ -9,11 +9,11 @@ class CuratorSDAnnouncerInitializer extends AnnouncerInitializer {
   override def configId = "io.l5d.curatorsd"
 }
 
-case class CuratorSDConfig(zkConnectStr: String, tenant: Option[String]) extends AnnouncerConfig {
+case class CuratorSDConfig(zkConnectStr: String) extends AnnouncerConfig {
 
   @JsonIgnore
   override def defaultPrefix: Path = Path.read("/io.l5d.curatorsd")
 
-  override def mk(): Announcer = new CuratorSDAnnouncer(zkConnectStr, tenant)
+  override def mk(): Announcer = new CuratorSDAnnouncer(zkConnectStr)
 }
 
