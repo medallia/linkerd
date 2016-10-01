@@ -102,6 +102,11 @@ object LinkerdBuild extends Base {
       .withTests()
       .dependsOn(core % "compile->compile;test->test")
 
+    val curator = projectDir("namer/curator")
+      .withLib(Deps.curatorSD)
+      .withTests()
+      .dependsOn(core % "compile->compile;test->test")
+
     val zkLeader = projectDir("namer/zk-leader")
       .dependsOn(core)
       .withLib(Deps.zkCandidate)
@@ -109,7 +114,7 @@ object LinkerdBuild extends Base {
 
     val all = projectDir("namer")
       .settings(aggregateSettings)
-      .aggregate(core, consul, fs, k8s, marathon, serversets, zkLeader)
+      .aggregate(core, consul, fs, k8s, marathon, serversets, curator, zkLeader)
   }
 
   val admin = projectDir("admin")
@@ -316,7 +321,7 @@ object LinkerdBuild extends Base {
       .withTwitterLib(Deps.finagle("stats") % Minimal)
       // Bundle includes all of the supported features:
       .configDependsOn(Bundle)(
-        Namer.consul, Namer.k8s, Namer.marathon, Namer.serversets,
+        Namer.consul, Namer.k8s, Namer.marathon, Namer.serversets, Namer.curator,
         Storage.etcd, Storage.inMemory, Storage.k8s, Storage.zk, Storage.consul
       )
       .settings(inConfig(Bundle)(BundleSettings))
@@ -434,6 +439,7 @@ object LinkerdBuild extends Base {
       val curatorsd = projectDir("linkerd/announcer/curatorsd")
         .withLib(Deps.curatorSD)
         .dependsOn(core)
+        .dependsOn(Namer.curator)
 
       val all = projectDir("linkerd/announcer")
         .aggregate(serversets)
@@ -505,7 +511,7 @@ object LinkerdBuild extends Base {
       .withTwitterLib(Deps.finagle("stats") % Minimal)
       // Bundle is includes all of the supported features:
       .configDependsOn(Bundle)(
-        Namer.consul, Namer.k8s, Namer.marathon, Namer.serversets, Namer.zkLeader,
+        Namer.consul, Namer.k8s, Namer.marathon, Namer.serversets, Namer.curator, Namer.zkLeader,
         Interpreter.namerd, Interpreter.fs, Interpreter.perHost, Interpreter.k8s,
         Protocol.mux, Protocol.thrift,
         Announcer.serversets, Announcer.curatorsd,
@@ -570,6 +576,7 @@ object LinkerdBuild extends Base {
   val namerK8s = Namer.k8s
   val namerMarathon = Namer.marathon
   val namerServersets = Namer.serversets
+  val namerCurator = Namer.curator
   val namerZkLeader = Namer.zkLeader
 
   val namerd = Namerd.all
