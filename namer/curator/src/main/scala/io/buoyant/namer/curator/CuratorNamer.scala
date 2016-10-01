@@ -4,9 +4,8 @@ import java.io.ByteArrayOutputStream
 import java.net.URL
 import java.util.concurrent.Callable
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import com.google.common.cache.{Cache, CacheBuilder}
+import com.medallia.servicediscovery.ServiceInstanceInfo
 import com.twitter.finagle._
 import com.twitter.logging.Logger
 import com.twitter.util.{Activity, Var}
@@ -15,6 +14,7 @@ import org.apache.curator.retry.ExponentialBackoffRetry
 import org.apache.curator.x.discovery.{ServiceDiscovery, ServiceInstance, ServiceProvider}
 import org.apache.curator.x.discovery.details.{InstanceSerializer, ServiceDiscoveryImpl}
 import org.apache.log4j.{BasicConfigurator, Level}
+import org.codehaus.jackson.map.ObjectMapper
 
 import scala.collection.JavaConverters._
 
@@ -122,11 +122,6 @@ class CuratorNamer(zkConnectStr: String) extends Namer {
 
 }
 
-/** ServiceDiscovery payload, just a generic description for now */
-case class ServiceInstanceInfo(description: String) {
-
-}
-
 object CuratorCommon {
 
   // TODO close objects
@@ -143,10 +138,8 @@ class ScalaJsonInstanceSerializer[T](val targetClass: Class[T]) extends Instance
   private val objectMapper = new ObjectMapper()
   private val serviceInstanceClass = objectMapper.getTypeFactory.constructType(classOf[ServiceInstance[T]])
 
-  objectMapper.registerModule(DefaultScalaModule)
-
   override def deserialize(bytes: Array[Byte]): ServiceInstance[T] = {
-    val rawServiceInstance: ServiceInstance[_] = objectMapper.readValue(bytes, serviceInstanceClass)
+    val rawServiceInstance: ServiceInstance[T] = objectMapper.readValue(bytes, serviceInstanceClass)
     targetClass.cast(rawServiceInstance.getPayload) // just to verify that it's the correct type
     rawServiceInstance.asInstanceOf[ServiceInstance[T]]
   }

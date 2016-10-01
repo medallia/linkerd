@@ -2,15 +2,16 @@ package io.buoyant.linkerd.announcer.curatorsd
 
 import java.net.InetSocketAddress
 
+import com.medallia.servicediscovery.ServiceInstanceInfo
 import com.twitter.finagle.{Announcement, Path}
 import com.twitter.logging.Logger
 import com.twitter.util.{Future, Time}
 import io.buoyant.linkerd.FutureAnnouncer
-import io.buoyant.namer.curator.{CuratorCommon, ScalaJsonInstanceSerializer, ServiceInstanceInfo}
+import io.buoyant.namer.curator.{CuratorCommon, ScalaJsonInstanceSerializer}
 import org.apache.curator.framework.CuratorFrameworkFactory
 import org.apache.curator.retry.ExponentialBackoffRetry
 import org.apache.curator.x.discovery._
-import org.apache.curator.x.discovery.details.{ServiceDiscoveryImpl}
+import org.apache.curator.x.discovery.details.ServiceDiscoveryImpl
 import org.apache.log4j.{BasicConfigurator, Level}
 
 /**
