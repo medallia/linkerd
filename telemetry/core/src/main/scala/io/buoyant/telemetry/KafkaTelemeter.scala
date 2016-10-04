@@ -86,10 +86,13 @@ case class KafkaTelemeter(topic: String, numRetries: Int, sampleRate: Float, bro
   //TODO need to do the tracerCache stuff to prevent duplicates in the config as well as allow support for multiple
   //kafka clusters. TODO track all the different instances of tracers/dedup them.
 
-  def tracer: Tracer = KafkaRawZipkinTracer.tracerCache.putIfAbsent(
-    brokerList + topic,
-    new KafkaTracer(new KafkaRawZipkinTracer(brokerList, numRetries, topic), sampleRate)
-  )
+  def tracer: Tracer = {
+    val tracerImpl = KafkaRawZipkinTracer.tracerCache.putIfAbsent(
+      brokerList + topic,
+      new KafkaTracer(new KafkaRawZipkinTracer(brokerList, numRetries, topic), sampleRate)
+    )
+    KafkaRawZipkinTracer.tracerCache.get(brokerList + topic)
+  }
 
   def cleanup(): Unit = {
     log.info("Starting cleanup of the kafka telemeter")
@@ -199,3 +202,4 @@ case class KafkaTelemeter(topic: String, numRetries: Int, sampleRate: Float, bro
     }
   }
 }
+
