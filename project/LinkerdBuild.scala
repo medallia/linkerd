@@ -123,6 +123,9 @@ object LinkerdBuild extends Base {
       .dependsOn(configCore)
       .withTwitterLib(Deps.finagle("core"))
       .withTwitterLib(Deps.finagle("stats") % Test)
+      .withTwitterLib(Deps.finagle("zipkin-core"))
+      .withTwitterLib(Deps.finagle("zipkin"))
+      .withLib(Deps.kafka)
       .withTests()
 
     val commonMetrics = projectDir("telemetry/common-metrics")
