@@ -116,29 +116,29 @@ object Headers {
     object Deadline {
       val Key = Prefix + "deadline"
 
-      def read(v: String): FDeadline = {
+      def read(v: String): context.Deadline = {
         val values = v.split(' ')
         val timestamp = Time.fromNanoseconds(values(0).toLong)
         val deadline = Time.fromNanoseconds(values(1).toLong)
-        FDeadline(timestamp, deadline)
+        context.Deadline(timestamp, deadline)
       }
 
       /**
        * Read all `l5d-ctx-deadline` headers and return the strictest
        * combination.
        */
-      def get(headers: HeaderMap): Option[FDeadline] =
-        headers.getAll(Key).foldLeft[Option[FDeadline]](None) { (d0, v) =>
+      def get(headers: HeaderMap): Option[context.Deadline] =
+        headers.getAll(Key).foldLeft[Option[context.Deadline]](None) { (d0, v) =>
           (d0, Try(read(v)).toOption) match {
-            case (Some(d0), Some(d1)) => Some(FDeadline.combined(d0, d1))
+            case (Some(d0), Some(d1)) => Some(context.Deadline.combined(d0, d1))
             case (d0, d1) => d0.orElse(d1)
           }
         }
 
-      def write(d: FDeadline): String =
+      def write(d: context.Deadline): String =
         s"${d.timestamp.inNanoseconds} ${d.deadline.inNanoseconds}"
 
-      def set(headers: HeaderMap, deadline: FDeadline): Unit = {
+      def set(headers: HeaderMap, deadline: context.Deadline): Unit = {
         val _ = headers.set(Key, write(deadline))
       }
 
@@ -159,11 +159,11 @@ object Headers {
             case None => service(req)
             case Some(reqDeadline) =>
               clear(req.headerMap)
-              val deadline = FDeadline.current match {
+              val deadline = context.Deadline.current match {
                 case None => reqDeadline
-                case Some(current) => FDeadline.combined(reqDeadline, current)
+                case Some(current) => context.Deadline.combined(reqDeadline, current)
               }
-              Contexts.broadcast.let(FDeadline, deadline) {
+              Contexts.broadcast.let(context.Deadline, deadline) {
                 service(req)
               }
           }
@@ -176,7 +176,7 @@ object Headers {
        */
       class ClientFilter extends SimpleFilter[Request, Response] {
         def apply(req: Request, service: Service[Request, Response]) =
-          FDeadline.current match {
+          context.Deadline.current match {
             case None => service(req)
             case Some(deadline) =>
               set(req.headerMap, deadline)
