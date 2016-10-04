@@ -13,7 +13,7 @@ trait TelemeterInitializer extends ConfigInitializer {
 }
 
 @JsonTypeInfo(
-  use = JsonTypeInfo.Id.NAME,
+  use = JsonTypeInfo.Id.CLASS,
   include = JsonTypeInfo.As.PROPERTY,
   property = "kind"
 )
