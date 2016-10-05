@@ -37,10 +37,6 @@ class CuratorSDAnnouncer(zkConnectStr: String) extends FutureAnnouncer {
   private val serviceDiscovery: ServiceDiscovery[ServiceInstanceInfo] =
     new ServiceDiscoveryImpl(curatorClient, "", new ScalaJsonInstanceSerializer[ServiceInstanceInfo](classOf[ServiceInstanceInfo]), null, false)
 
-  // Quick and dirty configuration of log4j to log to console, INFO level
-  BasicConfigurator.configure()
-  org.apache.log4j.Logger.getRootLogger().setLevel(Level.INFO)
-
   curatorClient.start()
   serviceDiscovery.start()
 
