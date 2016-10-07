@@ -59,35 +59,36 @@ class KafkaTelemeterInitializer extends TelemeterInitializer {
   def configClass = classOf[KafkaTelemeterConfig]
 }
 
-case class KafkaTelemeterConfig(brokerList: String, sampleRate: Float, numRetries: Int, metrics: Boolean, tracing: Boolean) extends TelemeterConfig {
+case class KafkaTelemeterConfig(brokerList: String, sampleRate: Float, numRetries: Int) extends TelemeterConfig {
   private val log = Logger.get(getClass)
   def mk(params: Stack.Params): KafkaTelemeter = {
     log.info("Broker list is %s", brokerList)
-    log.info("Number of retries per request is %s", brokerList)
-    new KafkaTelemeter("zipkin", numRetries, sampleRate, brokerList, metrics, tracing)
+    log.info("Number of retries per request is %s", numRetries)
+    log.info("Sample rate is" + sampleRate)
+    new KafkaTelemeter("zipkin", numRetries, sampleRate, brokerList)
   }
 }
 
-//Going with hybrid approach. Let kafka handle retries. Batching will be handled outside as it is being done today.
-//We will leave linger.ms unchanged for this reason at 1 ms.
-//The reason for this is that the API has been constructed in such a way that a given trace is annotated across multiple
-//different calls rather than gathering up all its annotations and then sending it on its way.
-
-case class KafkaTelemeter(topic: String, numRetries: Int, sampleRate: Float, brokerList: String, metrics: Boolean, tracing: Boolean) extends Telemeter {
+/**
+ * Going with hybrid approach. Let kafka handle retries. Batching will be handled outside as it is being done today.
+ * We will leave linger.ms unchanged for this reason at 1 ms.
+ * The reason for this is that the API has been constructed in such a way that a given trace is annotated across multiple
+ * different calls rather than gathering up all its annotations and then sending it on its way.
+ */
+case class KafkaTelemeter(topic: String, numRetries: Int, sampleRate: Float, brokerList: String) extends Telemeter {
   private val log = Logger.get(getClass)
   log.info("Initializing kafka telemeter")
   private var producer: KafkaProducer[Array[Byte], Array[Byte]] = null
-  private val METADATA_FETCH_TIMEOUT_CONFIG: Int = 3000
-  private val TIMEOUT_CONFIG: Int = 300
-  private val MAX_BLOCK_MS: Int = 1000
+  private val METADATA_FETCH_TIMEOUT_MS_CONFIG: Int = 3000
+  private val TIMEOUT_MS_CONFIG: Int = 300
   private val RETRY_BACKOFF_MS_CONFIG: Int = 10000
   private val RECONNECT_BACKOFF_MS_CONFIG: Int = 10000
-  private val CACHE_BYTE_ARRAYS: Int = 100
-  //TODO need to do the tracerCache stuff to prevent duplicates in the config as well as allow support for multiple
-  //kafka clusters. TODO track all the different instances of tracers/dedup them.
+  //Set this to 1 millisecond so that there is enough time for a batch of spans to be pushed to kafka local buffers.
+  private val LINGER_MS_CONFIG = 1
 
   def tracer: Tracer = {
-    val tracerImpl = KafkaRawZipkinTracer.tracerCache.putIfAbsent(
+    println("Sample rate is" + sampleRate)
+    KafkaRawZipkinTracer.tracerCache.putIfAbsent(
       brokerList + topic,
       new KafkaTracer(new KafkaRawZipkinTracer(brokerList, numRetries, topic), sampleRate)
     )
@@ -119,24 +120,26 @@ case class KafkaTelemeter(topic: String, numRetries: Int, sampleRate: Float, bro
     statsReceiver: StatsReceiver = DefaultStatsReceiver
   ) extends RawZipkinTracer(statsReceiver, timer) {
     log.info("Initializing kafka zipkin tracer")
-    private var producer: KafkaProducer[Array[Byte], Array[Byte]] = null
-    val configs: java.util.Map[String, AnyRef] = new java.util.HashMap[String, AnyRef]
-    configs.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, brokerList)
-    configs.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.ByteArraySerializer")
-    configs.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.ByteArraySerializer")
-    configs.put(ProducerConfig.METADATA_FETCH_TIMEOUT_CONFIG, METADATA_FETCH_TIMEOUT_CONFIG.asInstanceOf[AnyRef])
-    configs.put(ProducerConfig.TIMEOUT_CONFIG, TIMEOUT_CONFIG.asInstanceOf[AnyRef])
-    configs.put(ProducerConfig.RETRY_BACKOFF_MS_CONFIG, RETRY_BACKOFF_MS_CONFIG.asInstanceOf[AnyRef])
-    configs.put(ProducerConfig.RECONNECT_BACKOFF_MS_CONFIG, RECONNECT_BACKOFF_MS_CONFIG.asInstanceOf[AnyRef])
-    configs.put(ProducerConfig.RETRIES_CONFIG, numRetries.asInstanceOf[AnyRef])
-    producer = new KafkaProducer[Array[Byte], Array[Byte]](configs)
+    private val producer: KafkaProducer[Array[Byte], Array[Byte]] = {
+      val configs: java.util.Map[String, AnyRef] = new java.util.HashMap[String, AnyRef]
+      configs.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, brokerList)
+      configs.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.ByteArraySerializer")
+      configs.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.ByteArraySerializer")
+      configs.put(ProducerConfig.METADATA_FETCH_TIMEOUT_CONFIG, METADATA_FETCH_TIMEOUT_MS_CONFIG.asInstanceOf[AnyRef])
+      configs.put(ProducerConfig.TIMEOUT_CONFIG, TIMEOUT_MS_CONFIG.asInstanceOf[AnyRef])
+      configs.put(ProducerConfig.RETRY_BACKOFF_MS_CONFIG, RETRY_BACKOFF_MS_CONFIG.asInstanceOf[AnyRef])
+      configs.put(ProducerConfig.RECONNECT_BACKOFF_MS_CONFIG, RECONNECT_BACKOFF_MS_CONFIG.asInstanceOf[AnyRef])
+      configs.put(ProducerConfig.RETRIES_CONFIG, numRetries.asInstanceOf[AnyRef])
+      configs.put(ProducerConfig.LINGER_MS_CONFIG, LINGER_MS_CONFIG.asInstanceOf[AnyRef])
+      new KafkaProducer[Array[Byte], Array[Byte]](configs)
+    }
 
     //retries configured from the input.
     private[this] val scopedReceiver = statsReceiver.scope("log_span")
     private[this] val okCounter = scopedReceiver.counter("ok")
     private[this] val errorReceiver = scopedReceiver.scope("error")
 
-    private[this] def serializeBytes(span: Span): Array[Byte] = {
+    private[this] def serializeSpan(span: Span): Array[Byte] = {
       log.debug("Serializing span data to bytes")
       val tSerializer = new TSerializer()
       tSerializer.serialize(span.toThrift)
@@ -152,7 +155,7 @@ case class KafkaTelemeter(topic: String, numRetries: Int, sampleRate: Float, bro
       //stats emitted as part of the batch are exhausted independently of each other
       // without being able to send it out successfully.
       // Will try to do early detection. Currently this will enable both
-      //kafka level and higher level retries if the framework supports it.
+      //kafka level and higher level ret/**/ries if the framework supports it.
       var ex: Throwable = null
       Future({
         log.debug("Sending kafka %i trace events", spans.size)
@@ -160,12 +163,11 @@ case class KafkaTelemeter(topic: String, numRetries: Int, sampleRate: Float, bro
         val semaphore: Semaphore = new Semaphore((spans.size - 1) * -1)
         spans.foreach {
           span =>
-            val bytes: Array[Byte] = serializeBytes(span)
+            val bytes: Array[Byte] = serializeSpan(span)
             val record: ProducerRecord[Array[Byte], Array[Byte]] = new ProducerRecord[Array[Byte], Array[Byte]](topic, null, bytes)
 
             producer.send(record, new Callback() {
-              @Override
-              def onCompletion(metadata: RecordMetadata, exception: java.lang.Exception) {
+              override def onCompletion(metadata: RecordMetadata, exception: java.lang.Exception) {
                 if (exception != null) {
                   log.info("Error while sending message %s", exception.getMessage)
                   errorReceiver.counter("Failed retries").incr()

@@ -46,6 +46,7 @@ object Deps {
 
   // curator service discovery
   val curatorSD = "org.apache.curator" % "curator-x-discovery" % "2.11.0"
+
   // kafka
-  val kafka = "org.apache.kafka" % "kafka_2.10" % "0.8.2.1"
+  val kafka = "org.apache.kafka" % "kafka_2.11" % "0.8.2.1"
 }
