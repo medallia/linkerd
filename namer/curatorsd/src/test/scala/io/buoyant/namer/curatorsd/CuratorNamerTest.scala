@@ -77,9 +77,9 @@ class CuratorNamerTest extends FunSuite with NamerTestUtil {
 
   def namer(path: String) = new CuratorSDNamer("host") {
 
-    /** Resolve a resolver string to a Var[Addr]. */
-    override protected[this] def resolve(spec: String): Var[Addr] =
-      if (spec == s"zk2!host!$path") pathAddr
-      else otherAddr
+//    /** Resolve a resolver string to a Var[Addr]. */
+//    override protected[this] def resolve(spec: String): Var[Addr] =
+//      if (spec == s"zk2!host!$path") pathAddr
+//      else otherAddr
   }
 }
