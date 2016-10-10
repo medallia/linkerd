@@ -95,16 +95,17 @@ object Linker {
 
     def mk(defaultTelemeter: Telemeter = NullTelemeter): Linker = {
       // At least one router must be specified
+      println("Initializing a telemeer")
       if (routers.isEmpty) throw NoRoutersSpecified
 
       val telemeters = telemetry match {
         case None => Seq(defaultTelemeter)
-        case Some(telemeters) => telemeters.map(_.mk(Stack.Params.empty))
+        case Some(telemeters) => /*Seq(defaultTelemeter)*/ telemeters.map(_.mk(Stack.Params.empty))
       }
 
       // Telemeters may provide StatsReceivers.
       val stats = mkStats(telemeters)
-      LoadedStatsReceiver.self = stats
+      //LoadedStatsReceiver.self = stats
 
       // Tracers may be provided by telemeters OR by 'tracers'
       // configuration.

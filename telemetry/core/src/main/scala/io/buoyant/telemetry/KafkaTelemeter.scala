@@ -117,7 +117,7 @@ case class KafkaTelemeter(topic: String, numRetries: Int, sampleRate: Float, bro
     numRetries: Int = 3, //this is the kafka default.
     topic: String = "zipkin",
     timer: Timer = DefaultTimer.twitter,
-    statsReceiver: StatsReceiver = DefaultStatsReceiver
+    statsReceiver: StatsReceiver = NullStatsReceiver
   ) extends RawZipkinTracer(statsReceiver, timer) {
     log.info("Initializing kafka zipkin tracer")
     private val producer: KafkaProducer[Array[Byte], Array[Byte]] = {
