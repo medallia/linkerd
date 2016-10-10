@@ -102,7 +102,7 @@ object LinkerdBuild extends Base {
       .withTests()
       .dependsOn(core % "compile->compile;test->test")
 
-    val curator = projectDir("namer/curator")
+    val curatorSD = projectDir("namer/curatorsd")
       .withLib(Deps.curatorSD)
       .withTests()
       .dependsOn(core % "compile->compile;test->test")
@@ -114,7 +114,7 @@ object LinkerdBuild extends Base {
 
     val all = projectDir("namer")
       .settings(aggregateSettings)
-      .aggregate(core, consul, fs, k8s, marathon, serversets, curator, zkLeader)
+      .aggregate(core, consul, fs, k8s, marathon, serversets, curatorSD, zkLeader)
   }
 
   val admin = projectDir("admin")
@@ -321,7 +321,7 @@ object LinkerdBuild extends Base {
       .withTwitterLib(Deps.finagle("stats") % Minimal)
       // Bundle includes all of the supported features:
       .configDependsOn(Bundle)(
-        Namer.consul, Namer.k8s, Namer.marathon, Namer.serversets, Namer.curator,
+        Namer.consul, Namer.k8s, Namer.marathon, Namer.serversets, Namer.curatorSD,
         Storage.etcd, Storage.inMemory, Storage.k8s, Storage.zk, Storage.consul
       )
       .settings(inConfig(Bundle)(BundleSettings))
@@ -436,14 +436,14 @@ object LinkerdBuild extends Base {
         .withTwitterLib(Deps.finagle("serversets").exclude("org.slf4j", "slf4j-jdk14"))
         .dependsOn(core)
 
-      val curatorsd = projectDir("linkerd/announcer/curatorsd")
+      val curatorSD = projectDir("linkerd/announcer/curatorsd")
         .withLib(Deps.curatorSD)
         .dependsOn(core)
-        .dependsOn(Namer.curator)
+        .dependsOn(Namer.curatorSD)
 
       val all = projectDir("linkerd/announcer")
         .aggregate(serversets)
-        .aggregate(curatorsd)
+        .aggregate(curatorSD)
     }
 
     val admin = projectDir("linkerd/admin")
@@ -511,10 +511,10 @@ object LinkerdBuild extends Base {
       .withTwitterLib(Deps.finagle("stats") % Minimal)
       // Bundle is includes all of the supported features:
       .configDependsOn(Bundle)(
-        Namer.consul, Namer.k8s, Namer.marathon, Namer.serversets, Namer.curator, Namer.zkLeader,
+        Namer.consul, Namer.k8s, Namer.marathon, Namer.serversets, Namer.curatorSD, Namer.zkLeader,
         Interpreter.namerd, Interpreter.fs, Interpreter.perHost, Interpreter.k8s,
         Protocol.mux, Protocol.thrift,
-        Announcer.serversets, Announcer.curatorsd,
+        Announcer.serversets, Announcer.curatorSD,
         Telemetry.core, Telemetry.tracelog,
         Tracer.zipkin,
         tls)
@@ -576,7 +576,7 @@ object LinkerdBuild extends Base {
   val namerK8s = Namer.k8s
   val namerMarathon = Namer.marathon
   val namerServersets = Namer.serversets
-  val namerCurator = Namer.curator
+  val namerCurator = Namer.curatorSD
   val namerZkLeader = Namer.zkLeader
 
   val namerd = Namerd.all
@@ -617,7 +617,7 @@ object LinkerdBuild extends Base {
   val linkerdTracerZipkin = Linkerd.Tracer.zipkin
   val linkerdAnnouncer = Linkerd.Announcer.all
   val linkerdAnnouncerServersets = Linkerd.Announcer.serversets
-  val linkerdAnnouncerCuratorsd = Linkerd.Announcer.curatorsd
+  val linkerdAnnouncerCuratorsd = Linkerd.Announcer.curatorSD
   val linkerdTls = Linkerd.tls
 
   // Unified documentation via the sbt-unidoc plugin

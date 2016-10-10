@@ -1,10 +1,11 @@
-package io.buoyant.namer.curator
+package io.buoyant.namer.curatorsd
 
 import com.twitter.finagle._
 import com.twitter.util.{Activity, Var}
 import io.buoyant.namer.NamerTestUtil
 import java.net.{InetAddress, InetSocketAddress}
 
+import com.medallia.l5d.curatorsd.namer.CuratorSDNamer
 import org.scalatest.FunSuite
 
 // TODO
@@ -74,7 +75,7 @@ class CuratorNamerTest extends FunSuite with NamerTestUtil {
     }
   }
 
-  def namer(path: String) = new CuratorNamer("host") {
+  def namer(path: String) = new CuratorSDNamer("host") {
 
     /** Resolve a resolver string to a Var[Addr]. */
     override protected[this] def resolve(spec: String): Var[Addr] =

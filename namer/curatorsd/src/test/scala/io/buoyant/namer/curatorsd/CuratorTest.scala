@@ -1,6 +1,7 @@
-package io.buoyant.namer.curator
+package io.buoyant.namer.curatorsd
 
 import com.fasterxml.jackson.databind.JsonMappingException
+import com.medallia.l5d.curatorsd.{CuratorConfig, CuratorInitializer}
 import com.twitter.finagle.util.LoadService
 import io.buoyant.config.Parser
 import io.buoyant.namer.{NamerConfig, NamerInitializer}
