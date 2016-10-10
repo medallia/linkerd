@@ -15,20 +15,17 @@ import scala.collection.breakOut
   Mapping from linkerd header names to medallia header names.
  */
 object MedalliaHeaders {
-  val medalliaPrefix = "X-Medallia"
+  val MedalliaPrefix = "X-Medallia"
   val mapHeaderNames = collection.immutable.HashMap(
-    "l5d-sample" -> "X-Medallia-Tracing-Enabled",
-    "l5d-reqid" -> "X-Medallia-Tracer-Request-Id",
-    "l5d-ctx-trace" -> "X-Medallia-Tracer-Span-Id",
-    "L5d-sample" -> "X-Medallia-Tracing-Enabled",
-    "L5d-reqId" -> "X-Medallia-Tracer-Request-Id",
-    "L5d-ctx-trace" -> "X-Medallia-Tracer-Span-Id"
+    "L5D-SAMPLE" -> "X-Medallia-Tracing-Enabled",
+    "L5D-REQID" -> "X-Medallia-Tracer-Request-Id",
+    "L5D-CTX-TRACE" -> "X-Medallia-Tracer-Span-Id"
   )
   def getMedalliaHeaderName(linkerdHeaderName: String): String = {
-    if (mapHeaderNames contains linkerdHeaderName)
+    if (mapHeaderNames contains linkerdHeaderName.toUpperCase)
       mapHeaderNames(linkerdHeaderName)
     else {
-      linkerdHeaderName.replace("l5d", medalliaPrefix).replace("L5d", medalliaPrefix)
+      linkerdHeaderName.replace("l5d", MedalliaPrefix).replace("L5d", MedalliaPrefix)
     }
   }
 }
@@ -138,29 +135,29 @@ object Headers {
     object Deadline {
       val Key = MedalliaHeaders.getMedalliaHeaderName(Prefix + "deadline")
 
-      def read(v: String): context.Deadline = {
+      def read(v: String): FDeadline = {
         val values = v.split(' ')
         val timestamp = Time.fromNanoseconds(values(0).toLong)
         val deadline = Time.fromNanoseconds(values(1).toLong)
-        context.Deadline(timestamp, deadline)
+        FDeadline(timestamp, deadline)
       }
 
       /**
        * Read all `l5d-ctx-deadline` headers and return the strictest
        * combination.
        */
-      def get(headers: HeaderMap): Option[context.Deadline] =
-        headers.getAll(Key).foldLeft[Option[context.Deadline]](None) { (d0, v) =>
+      def get(headers: HeaderMap): Option[FDeadline] =
+        headers.getAll(Key).foldLeft[Option[FDeadline]](None) { (d0, v) =>
           (d0, Try(read(v)).toOption) match {
-            case (Some(d0), Some(d1)) => Some(context.Deadline.combined(d0, d1))
+            case (Some(d0), Some(d1)) => Some(FDeadline.combined(d0, d1))
             case (d0, d1) => d0.orElse(d1)
           }
         }
 
-      def write(d: context.Deadline): String =
+      def write(d: FDeadline): String =
         s"${d.timestamp.inNanoseconds} ${d.deadline.inNanoseconds}"
 
-      def set(headers: HeaderMap, deadline: context.Deadline): Unit = {
+      def set(headers: HeaderMap, deadline: FDeadline): Unit = {
         val _ = headers.set(Key, write(deadline))
       }
 
@@ -181,11 +178,11 @@ object Headers {
             case None => service(req)
             case Some(reqDeadline) =>
               clear(req.headerMap)
-              val deadline = context.Deadline.current match {
+              val deadline = FDeadline.current match {
                 case None => reqDeadline
-                case Some(current) => context.Deadline.combined(reqDeadline, current)
+                case Some(current) => FDeadline.combined(reqDeadline, current)
               }
-              Contexts.broadcast.let(context.Deadline, deadline) {
+              Contexts.broadcast.let(FDeadline, deadline) {
                 service(req)
               }
           }
@@ -198,7 +195,7 @@ object Headers {
        */
       class ClientFilter extends SimpleFilter[Request, Response] {
         def apply(req: Request, service: Service[Request, Response]) =
-          context.Deadline.current match {
+          FDeadline.current match {
             case None => service(req)
             case Some(deadline) =>
               set(req.headerMap, deadline)
