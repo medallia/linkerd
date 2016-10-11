@@ -22,11 +22,14 @@ object MedalliaHeaders {
     "L5D-CTX-TRACE" -> "X-Medallia-Tracer-Span-Id"
   )
   def getMedalliaHeaderName(linkerdHeaderName: String): String = {
-    if (mapHeaderNames contains linkerdHeaderName.toUpperCase)
-      mapHeaderNames(linkerdHeaderName)
-    else {
-      linkerdHeaderName.replace("l5d", MedalliaPrefix).replace("L5d", MedalliaPrefix)
-    }
+    val modifiedHeader =
+      {
+        if (mapHeaderNames contains linkerdHeaderName.toUpperCase)
+          mapHeaderNames(linkerdHeaderName.toUpperCase)
+        else
+          linkerdHeaderName.replace("l5d", MedalliaPrefix).replace("L5d", MedalliaPrefix)
+      }
+    modifiedHeader
   }
 }
 
