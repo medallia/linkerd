@@ -436,6 +436,7 @@ object LinkerdBuild extends Base {
         .withTwitterLib(Deps.finagle("serversets").exclude("org.slf4j", "slf4j-jdk14"))
         .dependsOn(core)
 
+<<<<<<< HEAD
       val curatorSD = projectDir("linkerd/announcer/curatorsd")
         .withLib(Deps.curatorSD)
         .dependsOn(core)
@@ -444,6 +445,15 @@ object LinkerdBuild extends Base {
       val all = projectDir("linkerd/announcer")
         .aggregate(serversets)
         .aggregate(curatorSD)
+=======
+      val curatorsd = projectDir("linkerd/announcer/curatorsd")
+        .withLib(Deps.curatorSD)
+        .dependsOn(core)
+
+      val all = projectDir("linkerd/announcer")
+        .aggregate(serversets)
+        .aggregate(curatorsd)
+>>>>>>> 0.8.1-medallia-release
     }
 
     val admin = projectDir("linkerd/admin")
