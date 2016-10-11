@@ -14,7 +14,7 @@ class MethodTenantHostIdentifierInitializer extends IdentifierInitializer {
 object MethodTenantHostIdentifierInitializer extends MethodTenantHostIdentifierInitializer
 
 object MethodTenantHostIdentifierConfig {
-  val kind = "io.l5d.methodTenantHost"
+  val kind = "com.medallia.methodTenantHost"
 }
 
 class MethodTenantHostIdentifierConfig extends HttpIdentifierConfig {
@@ -23,5 +23,5 @@ class MethodTenantHostIdentifierConfig extends HttpIdentifierConfig {
   override def newIdentifier(
     prefix: Path,
     baseDtab: () => Dtab = () => Dtab.base
-  ) = MethodTenantHostIdentifier(prefix, baseDtab)
+  ) = MethodTenantHostIdentifier.mk(prefix, baseDtab)
 }
