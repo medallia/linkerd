@@ -45,6 +45,7 @@ import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.clients.producer.Callback
 import org.apache.kafka.clients.producer.RecordMetadata
 import org.apache.thrift.TSerializer
+import org.apache.kafka.common.serialization.ByteArraySerializer
 import com.twitter.finagle.zipkin.core.TracerCache
 
 import java.util.Map
@@ -78,34 +79,36 @@ case class KafkaTelemeterConfig(brokerList: String, sampleRate: Float, numRetrie
 case class KafkaTelemeter(topic: String, numRetries: Int, sampleRate: Float, brokerList: String) extends Telemeter {
   private val log = Logger.get(getClass)
   log.info("Initializing kafka telemeter")
-  private var producer: KafkaProducer[Array[Byte], Array[Byte]] = null
   private val METADATA_FETCH_TIMEOUT_MS_CONFIG: Int = 3000
+  /* We do not want to wait too long on the broker for the event propagated to the replicas */
   private val TIMEOUT_MS_CONFIG: Int = 300
   private val RETRY_BACKOFF_MS_CONFIG: Int = 10000
   private val RECONNECT_BACKOFF_MS_CONFIG: Int = 10000
   //Set this to 1 millisecond so that there is enough time for a batch of spans to be pushed to kafka local buffers.
   private val LINGER_MS_CONFIG = 1
-
-  def tracer: Tracer = {
-    println("Sample rate is" + sampleRate)
-    KafkaRawZipkinTracer.tracerCache.putIfAbsent(
-      brokerList + topic,
-      new KafkaTracer(new KafkaRawZipkinTracer(brokerList, numRetries, topic), sampleRate)
-    )
-    KafkaRawZipkinTracer.tracerCache.get(brokerList + topic)
+  case class TracerTuple(kafkaRawZipkinTracer: KafkaRawZipkinTracer, kafkaTracer: KafkaTracer)
+  val createTracer = new java.util.function.Function[String, TracerTuple] {
+    override def apply(t: String): TracerTuple = {
+      val underlyingTracer = new KafkaRawZipkinTracer(brokerList, numRetries, topic)
+      new TracerTuple(underlyingTracer, new KafkaTracer(underlyingTracer, sampleRate))
+    }
   }
 
-  def cleanup(): Unit = {
+  def tracer: Tracer = {
+    KafkaRawZipkinTracer.tracerCache.computeIfAbsent(
+      brokerList + topic,
+      createTracer
+    ).kafkaTracer
+  }
+
+  private def cleanup(): Unit = {
     log.info("Starting cleanup of the kafka telemeter")
-    //This is a stop gap arrangement. Give one minute for all remaining spans to be flushed.
-    Thread.sleep(1 * 60 * 1000)
-    //Then wait for graceful shutdown of the kafka producer to ensure things have been emitted.
-    producer.close()
+    KafkaRawZipkinTracer.tracerCache.get(brokerList + topic).kafkaRawZipkinTracer.cleanup()
     log.info("Done cleaning up the kafka telemeter")
   }
 
   object KafkaRawZipkinTracer {
-    val tracerCache = new ConcurrentHashMap[String, KafkaTracer]
+    val tracerCache = new ConcurrentHashMap[String, TracerTuple]
   }
 
   class KafkaTracer(tracer: Tracer, sampleRate: Float = Sampler.DefaultSampleRate)
@@ -117,21 +120,19 @@ case class KafkaTelemeter(topic: String, numRetries: Int, sampleRate: Float, bro
     numRetries: Int = 3, //this is the kafka default.
     topic: String = "zipkin",
     timer: Timer = DefaultTimer.twitter,
-    statsReceiver: StatsReceiver = NullStatsReceiver
+    statsReceiver: StatsReceiver = DefaultStatsReceiver
   ) extends RawZipkinTracer(statsReceiver, timer) {
     log.info("Initializing kafka zipkin tracer")
     private val producer: KafkaProducer[Array[Byte], Array[Byte]] = {
       val configs: java.util.Map[String, AnyRef] = new java.util.HashMap[String, AnyRef]
       configs.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, brokerList)
-      configs.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.ByteArraySerializer")
-      configs.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.ByteArraySerializer")
       configs.put(ProducerConfig.METADATA_FETCH_TIMEOUT_CONFIG, METADATA_FETCH_TIMEOUT_MS_CONFIG.asInstanceOf[AnyRef])
       configs.put(ProducerConfig.TIMEOUT_CONFIG, TIMEOUT_MS_CONFIG.asInstanceOf[AnyRef])
       configs.put(ProducerConfig.RETRY_BACKOFF_MS_CONFIG, RETRY_BACKOFF_MS_CONFIG.asInstanceOf[AnyRef])
       configs.put(ProducerConfig.RECONNECT_BACKOFF_MS_CONFIG, RECONNECT_BACKOFF_MS_CONFIG.asInstanceOf[AnyRef])
       configs.put(ProducerConfig.RETRIES_CONFIG, numRetries.asInstanceOf[AnyRef])
       configs.put(ProducerConfig.LINGER_MS_CONFIG, LINGER_MS_CONFIG.asInstanceOf[AnyRef])
-      new KafkaProducer[Array[Byte], Array[Byte]](configs)
+      new KafkaProducer[Array[Byte], Array[Byte]](configs, new ByteArraySerializer(), new ByteArraySerializer())
     }
 
     //retries configured from the input.
@@ -192,15 +193,21 @@ case class KafkaTelemeter(topic: String, numRetries: Int, sampleRate: Float, bro
           throw ex
       })
     }
+
+    def cleanup() = {
+      //Take all the pending spans and flush them.
+      Await.result(this.flush())
+      producer.close()
+    }
   }
 
-  override def stats: StatsReceiver = DefaultStatsReceiver
+  override def stats: StatsReceiver = NullStatsReceiver
 
   override def run(): Closable with Awaitable[Unit] = new Closable with CloseAwaitably {
     def close(deadline: Time): Future[Unit] = {
-      Future({
+      closeAwaitably(Future({
         cleanup()
-      })
+      }))
     }
   }
 }
