@@ -56,7 +56,6 @@ import com.twitter.logging.Logger
 
 class KafkaTelemeterInitializer extends TelemeterInitializer {
   type Config = KafkaTelemeterConfig
-  //override def configId = "io.buoyant.telemetry.KafkaTelemeterConfig"
   override def configId = "io.l5d.kafkazipkin"
   def configClass = classOf[KafkaTelemeterConfig]
 }

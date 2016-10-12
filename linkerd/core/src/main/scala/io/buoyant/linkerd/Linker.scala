@@ -95,7 +95,6 @@ object Linker {
 
     def mk(defaultTelemeter: Telemeter = NullTelemeter): Linker = {
       // At least one router must be specified
-      println("Initializing a telemeer")
       if (routers.isEmpty) throw NoRoutersSpecified
 
       val telemeters = telemetry match {
