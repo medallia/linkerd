@@ -12,7 +12,7 @@ object Deps {
 
   // networking
   def finagle(mod: String) =
-    "com.twitter" %% s"finagle-$mod" % "6.36.0"
+    "com.twitter" %% s"finagle-$mod" % "6.37.0"
 
   def zkCandidate = "com.twitter.common.zookeeper" % "candidate" % "0.0.76"
 
@@ -46,4 +46,7 @@ object Deps {
 
   // curator service discovery
   val curatorSD = "org.apache.curator" % "curator-x-discovery" % "2.11.0"
+
+  // kafka
+  val kafka = "org.apache.kafka" % "kafka_2.11" % "0.8.2.1"
 }
