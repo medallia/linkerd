@@ -65,7 +65,7 @@ case class KafkaTelemeterConfig(brokerList: String, sampleRate: Float, numRetrie
   def mk(params: Stack.Params): KafkaTelemeter = {
     log.info("Broker list is %s", brokerList)
     log.info("Number of retries per request is %s", numRetries)
-    log.info("Sample rate is" + sampleRate)
+    log.info("Sample rate is %s",sampleRate)
     new KafkaTelemeter("zipkin", numRetries, sampleRate, brokerList)
   }
 }
@@ -77,7 +77,6 @@ case class KafkaTelemeterConfig(brokerList: String, sampleRate: Float, numRetrie
  * different calls rather than gathering up all its annotations and then sending it on its way.
  */
 case class KafkaTelemeter(topic: String, numRetries: Int, sampleRate: Float, brokerList: String) extends Telemeter {
-  println("Hello world")
   private val log = Logger.get(getClass)
   log.info("Initializing kafka telemeter")
   case class TracerTuple(kafkaRawZipkinTracer: KafkaRawZipkinTracer, kafkaTracer: KafkaTracer)
