@@ -65,7 +65,7 @@ case class KafkaTelemeterConfig(brokerList: String, sampleRate: Float, numRetrie
   def mk(params: Stack.Params): KafkaTelemeter = {
     log.info("Broker list is %s", brokerList)
     log.info("Number of retries per request is %s", numRetries)
-    log.info("Sample rate is %s",sampleRate)
+    log.info("Sample rate is %s", sampleRate)
     new KafkaTelemeter("zipkin", numRetries, sampleRate, brokerList)
   }
 }
