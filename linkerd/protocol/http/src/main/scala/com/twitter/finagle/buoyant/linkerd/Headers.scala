@@ -1,8 +1,9 @@
 package com.twitter.finagle.buoyant.linkerd
 
-import com.twitter.finagle.{Deadline => FDeadline, Dtab => FDtab, Status => _, _}
+import com.twitter.finagle.{Dtab => FDtab, Status => _, _}
 import com.twitter.finagle.buoyant.{Dst => BuoyantDst}
 import com.twitter.finagle.context.Contexts
+import com.twitter.finagle.context.{Deadline => FDeadline}
 import com.twitter.finagle.http._
 import com.twitter.finagle.tracing._
 import com.twitter.io.Charsets
@@ -10,6 +11,25 @@ import com.twitter.util.{Future, Return, Throw, Time, Try}
 import java.net.URLEncoder
 import java.util.Base64
 import scala.collection.breakOut
+
+/*
+  Mapping from linkerd header names to medallia header names.
+ */
+object MedalliaHeaders {
+  val MedalliaPrefix = "X-Medallia"
+  val mapHeaderNames = collection.immutable.HashMap(
+    "L5D-SAMPLE" -> "X-Medallia-Tracing-Enabled",
+    "L5D-REQID" -> "X-Medallia-Tracer-Request-Id",
+    "L5D-CTX-TRACE" -> "X-Medallia-Tracer-Span-Id"
+  )
+  def getMedalliaHeaderName(linkerdHeaderName: String): String = {
+    val canonicalHeader = linkerdHeaderName.toUpperCase
+    if (mapHeaderNames contains canonicalHeader)
+      mapHeaderNames(canonicalHeader)
+    else
+      linkerdHeaderName.replace("l5d", MedalliaPrefix).replace("L5d", MedalliaPrefix)
+  }
+}
 
 /**
  * The finagle http stack manages a set of context headers that are
@@ -114,7 +134,7 @@ object Headers {
      * deadline. Otherwise, outgoing requests MAY have a deadline.
      */
     object Deadline {
-      val Key = Prefix + "deadline"
+      val Key = MedalliaHeaders.getMedalliaHeaderName(Prefix + "deadline")
 
       def read(v: String): FDeadline = {
         val values = v.split(' ')
@@ -205,8 +225,8 @@ object Headers {
      * delegations take precdence.
      */
     object Dtab {
-      val CtxKey = Ctx.Prefix + "dtab"
-      val UserKey = Headers.Prefix + "dtab"
+      val CtxKey = MedalliaHeaders.getMedalliaHeaderName(Ctx.Prefix + "dtab")
+      val UserKey = MedalliaHeaders.getMedalliaHeaderName(Headers.Prefix + "dtab")
 
       private val EmptyReturn = Return(FDtab.empty)
 
@@ -267,7 +287,7 @@ object Headers {
     }
 
     object Trace {
-      val Key = Prefix + "trace"
+      val Key = MedalliaHeaders.getMedalliaHeaderName(Prefix + "trace")
 
       /**
        * Get a trace id from a base64 encoded buffer.
@@ -306,7 +326,7 @@ object Headers {
    * linkerd instances.
    */
   object RequestId {
-    val Key = Prefix + "reqid"
+    val Key = MedalliaHeaders.getMedalliaHeaderName(Prefix + "reqid")
 
     def set(headers: HeaderMap, traceId: TraceId): Unit = {
       val _ = headers.set(Key, traceId.traceId.toString)
@@ -326,7 +346,7 @@ object Headers {
    * sampled on all downstream requestes.
    */
   object Sample {
-    val Key = Prefix + "sample"
+    val Key = MedalliaHeaders.getMedalliaHeaderName(Prefix + "sample")
 
     def get(headers: HeaderMap): Option[Float] =
       headers.get(Key).flatMap { s =>
@@ -350,9 +370,9 @@ object Headers {
    * next hop.
    */
   object Dst {
-    val Path = Prefix + "dst-logical"
-    val Bound = Prefix + "dst-concrete"
-    val Residual = Prefix + "dst-residual"
+    val Path = MedalliaHeaders.getMedalliaHeaderName(Prefix + "dst-logical")
+    val Bound = MedalliaHeaders.getMedalliaHeaderName(Prefix + "dst-concrete")
+    val Residual = MedalliaHeaders.getMedalliaHeaderName(Prefix + "dst-residual")
 
     /** Encodes `l5d-dst-path` on outgoing requests. */
     class PathFilter(path: Path) extends SimpleFilter[Request, Response] {
@@ -415,7 +435,7 @@ object Headers {
    * responses from application responses.
    */
   object Err {
-    val Key = Prefix + "err"
+    val Key = MedalliaHeaders.getMedalliaHeaderName(Prefix + "err")
 
     def respond(msg: String, status: Status = Status.InternalServerError): Response = {
       val rsp = Response(status)
