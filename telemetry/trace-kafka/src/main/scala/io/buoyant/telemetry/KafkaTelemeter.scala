@@ -1,55 +1,29 @@
 package io.buoyant.telemetry
 
-import com.twitter.finagle.stats.StatsReceiver
 import com.twitter.finagle.stats.NullStatsReceiver
-import com.twitter.finagle.tracing.Tracer
-import com.twitter.finagle.tracing.TraceId
-import com.twitter.finagle.tracing.Record
 import com.twitter.finagle.stats.DefaultStatsReceiver
 import com.twitter.util.{Awaitable, Closable}
-import java.util.concurrent.CountDownLatch
-import java.util.concurrent.atomic.{AtomicBoolean, AtomicLong}
 import java.util.concurrent.ConcurrentHashMap
 import com.twitter.finagle.zipkin.core.SamplingTracer
 import com.twitter.finagle.zipkin.core.Sampler
 
-import scala.collection.JavaConverters._
 import org.apache.kafka.clients.producer.KafkaProducer
-import com.twitter.util.Duration
-import com.twitter.util.Awaitable.CanAwait
 import com.twitter.util.Time
 import com.twitter.util.Future
-import com.twitter.util.Try
-import com.google.common.collect.EvictingQueue
-import com.twitter.finagle.tracing.Tracer
-import java.util.concurrent.Semaphore
 
-import com.twitter.finagle.{Stack, tracing}
-import com.twitter.finagle.zipkin.thrift.ScribeRawZipkinTracer
+import com.twitter.finagle.Stack
 
-import com.twitter.conversions.time._
 import com.twitter.finagle.stats.StatsReceiver
 import com.twitter.finagle.tracing.Tracer
 import com.twitter.finagle.util.DefaultTimer
 import com.twitter.util._
-import java.net.InetSocketAddress
-import java.nio.ByteBuffer
 import com.twitter.finagle.zipkin.core.RawZipkinTracer
 import com.twitter.finagle.zipkin.core.Span
-import com.twitter.finagle.zipkin.core.DeadlineSpanMap
-import com.twitter.finagle.Codec
-import java.io.ByteArrayOutputStream
-import java.io.ObjectOutputStream
-import java.io.IOException
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.clients.producer.Callback
 import org.apache.kafka.clients.producer.RecordMetadata
 import org.apache.thrift.TSerializer
 import org.apache.kafka.common.serialization.ByteArraySerializer
-import com.twitter.finagle.zipkin.core.TracerCache
-
-import java.util.Map
-import java.util.HashMap
 
 import org.apache.kafka.clients.producer.ProducerConfig
 import com.twitter.logging.Logger
