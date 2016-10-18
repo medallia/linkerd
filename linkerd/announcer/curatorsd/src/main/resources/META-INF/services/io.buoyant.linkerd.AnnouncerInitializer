@@ -1,1 +1,1 @@
-io.buoyant.linkerd.announcer.curatorsd.CuratorSDAnnouncerInitializer
+com.medallia.l5d.curatorsd.announcer.CuratorSDAnnouncerInitializer

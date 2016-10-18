@@ -34,16 +34,19 @@ object Main extends App {
         val admin = initAdmin(config, linker)
         val telemeters = linker.telemeters.map(_.run())
         val routers = linker.routers.map(initRouter(_))
+        val closableNamers = linker.namers.map(_._2).collect { case x: Closable with Awaitable[_] => x }
 
         log.info("linkerd initialized.")
         registerTerminationSignalHandler(config.admin.flatMap(_.shutdownGraceMs))
         closeOnExit(Closable.sequence(
           Closable.all(routers: _*),
           Closable.all(telemeters: _*),
+          Closable.all(closableNamers: _*),
           admin
         ))
         Await.all(routers: _*)
         Await.all(telemeters: _*)
+        Await.all(closableNamers: _*)
         Await.result(admin)
 
       case _ => exitOnError("usage: linkerd path/to/config")
