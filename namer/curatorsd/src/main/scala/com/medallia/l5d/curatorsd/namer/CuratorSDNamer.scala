@@ -24,7 +24,7 @@ import scala.collection.JavaConverters._
  * and returns a dynamic representation of the resolution of the path into a
  * tree of Names.
  */
-class CuratorSDNamer(zkConnectStr: String) extends Namer with Closable {
+class CuratorSDNamer(zkConnectStr: String) extends Namer with Closable with CloseAwaitably {
 
   private val log = Logger(getClass)
 
@@ -96,11 +96,10 @@ class CuratorSDNamer(zkConnectStr: String) extends Namer with Closable {
     }
   }
 
-  override def close(deadline: Time) =
-    Future {
-      log.info("Closing curator namer %s", zkConnectStr)
-      serviceDiscoveryInfo.close()
-      log.info("Curator namer closed")
-    }
+  override def close(deadline: Time) = closeAwaitably(Future {
+    log.info("Closing curator namer %s", zkConnectStr)
+    serviceDiscoveryInfo.close()
+    log.info("Curator namer closed")
+  })
 
 }

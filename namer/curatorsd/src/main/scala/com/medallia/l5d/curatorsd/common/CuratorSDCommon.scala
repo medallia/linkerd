@@ -3,7 +3,7 @@ package com.medallia.l5d.curatorsd.common
 import java.io.ByteArrayOutputStream
 import java.util.concurrent.Callable
 import java.util.concurrent.TimeUnit._
-import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.{AtomicBoolean, AtomicInteger}
 
 import com.google.common.base.Joiner
 import com.google.common.cache.CacheBuilder
@@ -91,18 +91,23 @@ case class ServiceDiscoveryInfo(zkConnectStr: String) extends RefCounted {
 trait RefCounted extends Closable {
 
   private val refCount = new AtomicInteger()
+  private val isClosed = new AtomicBoolean()
 
   override def close(deadline: Time): Future[Unit] = Future {
-    val refCountValue = refCount.decrementAndGet()
-    if (refCountValue == 0) {
-      RefCounted.this.synchronized {
+    this.synchronized {
+      if (refCount.decrementAndGet() <= 0 && !isClosed.get()) {
         performClose()
+        isClosed.set(true)
       }
     }
   }
 
   private[common] def addReference(): Unit = {
-    val _ = refCount.incrementAndGet()
+    this.synchronized {
+      if (isClosed.get())
+        throw new IllegalStateException(s"Already closed $this")
+      val _ = refCount.incrementAndGet()
+    }
   }
 
   protected def performClose(): Unit

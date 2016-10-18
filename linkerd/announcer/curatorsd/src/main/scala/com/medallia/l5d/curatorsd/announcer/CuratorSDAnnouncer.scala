@@ -59,13 +59,11 @@ class CuratorSDAnnouncer(zkConnectStr: String) extends FutureAnnouncer {
     name.take(2) match {
       case id@Path.Utf8(serviceDef) =>
         // TODO (future) full semantic version could be a third element in the future
-        val parts = serviceDef.split("#")
-        if (parts.length != 1 && parts.length != 2)
-          throw new IllegalArgumentException(s"Incorrect number of parts in announcer name (it should be serviceId[#tenant]) $serviceDef")
-        val serviceId = parts(0)
-        val tenant = if (parts.length > 1) Option(parts(1)).filter(_.trim.nonEmpty) else None
-        announce(serviceId, tenant, addr)
-
+        serviceDef.split("#") match {
+          case Array(serviceId) => announce(serviceId, None, addr)
+          case Array(serviceId, tenant) => announce(serviceId, Some(tenant).filter(_.trim.nonEmpty), addr)
+          case _ => throw new IllegalArgumentException(s"Incorrect number of parts in announcer name (it should be serviceId[#tenant]) $serviceDef")
+        }
       case _ => throw new IllegalArgumentException(s"Tenant information is missing in path: $name")
     }
 
