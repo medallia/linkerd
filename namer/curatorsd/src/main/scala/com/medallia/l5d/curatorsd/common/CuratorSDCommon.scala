@@ -33,7 +33,7 @@ object CuratorSDCommon {
   }
 
   def getServiceFullPath(serviceId: String, tenant: Option[String]): String = {
-    tenant.map(t => Joiner.on(".").join(serviceId, tenant)).getOrElse(serviceId)
+    tenant.map(t => Joiner.on(".").join(serviceId, t)).getOrElse(serviceId)
   }
 
 }
@@ -113,4 +113,3 @@ trait RefCounted extends Closable {
   protected def performClose(): Unit
 
 }
-
