@@ -31,11 +31,13 @@ class CuratorSDAnnouncer(zkConnectStr: String) extends FutureAnnouncer {
     val serviceFullPath = CuratorSDCommon.getServiceFullPath(serviceId, tenant)
 
     // TODO (future) how to specify https? Handle this when we work on the Namer.
+    val addressHostString = address.getHostString
+    val addressPort = address.getPort
     val builder = ServiceInstance.builder[ServiceInstanceInfo]
       .name(serviceFullPath)
-      .uriSpec(new UriSpec(s"http://$address.getHostString:$address.getPort"))
-      .port(address.getPort)
-      .address(address.getHostString)
+      .uriSpec(new UriSpec(s"http://$addressHostString:$addressPort"))
+      .port(addressPort)
+      .address(addressHostString)
       .payload(ServiceInstanceInfo(s"serviceId: $serviceId, tenant: $tenantStr"))
       .serviceType(ServiceType.DYNAMIC)
 
