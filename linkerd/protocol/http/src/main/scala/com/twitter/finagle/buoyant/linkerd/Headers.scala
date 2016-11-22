@@ -358,7 +358,7 @@ object Headers {
       }
 
     def clear(headers: HeaderMap): Unit = {
-      val _ = headers.remove(Key)
+      //We want to pass down the header which represents tracing decision downstream. 
     }
   }
 
