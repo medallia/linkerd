@@ -9,7 +9,6 @@ import com.twitter.logging.Logger
 import com.twitter.util.{Future, Time}
 import io.buoyant.linkerd.FutureAnnouncer
 import org.apache.curator.x.discovery._
-import org.apache.zookeeper.{CreateMode, ZooDefs}
 
 /**
  * Announcer that uses the curator service discovery format.
