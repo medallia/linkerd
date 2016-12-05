@@ -9,6 +9,7 @@ import com.twitter.logging.Logger
 import com.twitter.util.{Future, Time}
 import io.buoyant.linkerd.FutureAnnouncer
 import org.apache.curator.x.discovery._
+import org.apache.zookeeper.{CreateMode, ZooDefs}
 
 /**
  * Announcer that uses the curator service discovery format.
@@ -42,6 +43,9 @@ class CuratorSDAnnouncer(zkConnectStr: String) extends FutureAnnouncer {
       .serviceType(ServiceType.DYNAMIC)
 
     val serviceInstance = builder.build
+
+    serviceDiscoveryInfo.curatorClient.create().creatingParentContainersIfNeeded().withMode(CreateMode.PERSISTENT).
+      withACL(ZooDefs.Ids.OPEN_ACL_UNSAFE).forPath(serviceFullPath);
 
     serviceDiscoveryInfo.serviceDiscovery.registerService(serviceInstance)
 
