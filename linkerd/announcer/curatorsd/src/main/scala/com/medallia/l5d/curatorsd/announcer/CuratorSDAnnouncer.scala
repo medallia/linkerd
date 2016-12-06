@@ -43,6 +43,8 @@ class CuratorSDAnnouncer(zkConnectStr: String) extends FutureAnnouncer {
 
     val serviceInstance = builder.build
 
+    serviceDiscoveryInfo.curatorClient.create().creatingParentsIfNeeded().forPath(serviceFullPath);
+
     serviceDiscoveryInfo.serviceDiscovery.registerService(serviceInstance)
 
     log.info("Successfully announced %s %s %s", serviceFullPath, address, serviceInstance.getId)
