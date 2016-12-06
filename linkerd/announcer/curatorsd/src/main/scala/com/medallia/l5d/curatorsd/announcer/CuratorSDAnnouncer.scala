@@ -9,7 +9,6 @@ import com.twitter.logging.Logger
 import com.twitter.util.{Future, Time}
 import io.buoyant.linkerd.FutureAnnouncer
 import org.apache.curator.x.discovery._
-import org.apache.zookeeper.{CreateMode, ZooDefs}
 
 /**
  * Announcer that uses the curator service discovery format.
@@ -44,8 +43,9 @@ class CuratorSDAnnouncer(zkConnectStr: String) extends FutureAnnouncer {
 
     val serviceInstance = builder.build
 
-    serviceDiscoveryInfo.curatorClient.create().creatingParentContainersIfNeeded().withMode(CreateMode.PERSISTENT).
-      withACL(ZooDefs.Ids.OPEN_ACL_UNSAFE).forPath(serviceFullPath);
+    serviceDiscoveryInfo.curatorClient.create().creatingParentsIfNeeded().forPath(serviceFullPath);
+    //HACK TO FIX RA-1650 till it is resolved. **MAJOR HACK**
+    serviceDiscoveryInfo.curatorClient.create().creatingParentsIfNeeded().forPath(serviceFullPath.replaceFirst("toplevel", "lowerlevel");
 
     serviceDiscoveryInfo.serviceDiscovery.registerService(serviceInstance)
 
