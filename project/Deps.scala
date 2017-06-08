@@ -48,7 +48,7 @@ object Deps {
   val guava = "com.google.guava" % "guava" % "19.0"
 
   // curator service discovery
-  val curatorSD = "org.apache.curator" % "curator-x-discovery" % "2.11.0"
+  val curatorSD = "org.apache.curator" % "curator-x-discovery" % "2.12.0"
 
   // kafka
   val kafka = "org.apache.kafka" % "kafka_2.11" % "0.8.2.1"
