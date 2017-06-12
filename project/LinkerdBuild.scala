@@ -114,7 +114,7 @@ object LinkerdBuild extends Base {
 
     val curator = projectDir("namer/curator")
       .dependsOn(core)
-      .withLibs(Deps.curatorFramework, Deps.curatorClient, Deps.curatorDiscovery)
+      .withLibs(Deps.curatorSD)
       .withTests()
 
     val fs = projectDir("namer/fs")

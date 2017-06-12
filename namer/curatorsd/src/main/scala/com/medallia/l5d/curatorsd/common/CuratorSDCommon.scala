@@ -18,13 +18,13 @@ import org.codehaus.jackson.map.ObjectMapper
 
 object CuratorSDCommon {
 
-  val curatorClientCache = CacheBuilder.newBuilder().build[String, ServiceDiscoveryInfo]
+  private val curatorClientCache = CacheBuilder.newBuilder().build[String, ServiceDiscoveryInfo]
 
   /**
    * @param zkConnectStr ZK connection string
    * @return Service Discovery set of objects which needs to be closed
    */
-  def createServiceDiscovery(zkConnectStr: String) = {
+  def createServiceDiscovery(zkConnectStr: String): ServiceDiscoveryInfo = {
     val serviceDiscoveryInfo = curatorClientCache.get(zkConnectStr, new Callable[ServiceDiscoveryInfo] {
       def call = ServiceDiscoveryInfo(zkConnectStr)
     })
@@ -64,7 +64,7 @@ case class ServiceDiscoveryInfo(zkConnectStr: String) extends RefCounted {
   private val DefaultBaseSleepTime = Duration.fromSeconds(1)
   private val DefaultMaxRetries = 3
 
-  val curatorClient = CuratorFrameworkFactory.builder
+  private val curatorClient = CuratorFrameworkFactory.builder
     .connectString(zkConnectStr)
     .retryPolicy(new ExponentialBackoffRetry(DefaultBaseSleepTime.inMillis.toInt, DefaultMaxRetries))
     .build
