@@ -60,4 +60,10 @@ object Deps {
 
   // statsd client
   val statsd = "com.datadoghq" % "java-dogstatsd-client" % "2.3"
+
+  // curator service discovery
+  val curatorSD = "org.apache.curator" % "curator-x-discovery" % "2.12.0"
+
+  // kafka
+  val kafka = "org.apache.kafka" % "kafka_2.12" % "0.10.1.1"
 }
