@@ -14,7 +14,11 @@ import org.apache.curator.framework.CuratorFrameworkFactory
 import org.apache.curator.retry.ExponentialBackoffRetry
 import org.apache.curator.x.discovery.details.InstanceSerializer
 import org.apache.curator.x.discovery.{ServiceDiscoveryBuilder, ServiceInstance}
+import org.codehaus.jackson.Version
+import org.codehaus.jackson.annotate.JsonIgnore
+import org.codehaus.jackson.map.Module.SetupContext
 import org.codehaus.jackson.map.ObjectMapper
+import org.codehaus.jackson.map.module.SimpleModule
 
 object CuratorSDCommon {
 
@@ -38,10 +42,37 @@ object CuratorSDCommon {
 
 }
 
+/**
+ * Curator 2.12.0 introduced a non-backwards compatible change described here: https://issues.apache.org/jira/browse/CURATOR-394
+ * <p>
+ * The problem is mainly a new "enabled" attribute that is included in the serialized json and old clients fail to parse.
+ * There's an official patch (https://github.com/apache/curator/pull/208), but it hasn't been released yet.
+ * <p>
+ * This module is doing something very similar, it excludes the new attribute from the serialization, but still understands it
+ * if it's found during deserialization.
+ */
+class Curator2120Patch extends SimpleModule("Curator212Patch", new Version(0, 0, 1, null)) {
+
+  /** Way to add annotations to an existing class whose sources we don't control */
+  abstract class ServiceInstanceMixIn {
+
+    @JsonIgnore
+    def isEnabled: Boolean
+
+  }
+
+  override def setupModule(context: SetupContext): Unit = {
+    context.setMixInAnnotations(classOf[ServiceInstance[_]], classOf[ServiceInstanceMixIn])
+  }
+
+}
+
 /** Scala version of JsonInstanceSerializer (supports scala properties) */
 class ScalaJsonInstanceSerializer[T](val targetClass: Class[T]) extends InstanceSerializer[T] {
 
   private val objectMapper = new ObjectMapper()
+  objectMapper.registerModule(new Curator2120Patch())
+
   private val serviceInstanceClass = objectMapper.getTypeFactory.constructType(classOf[ServiceInstance[T]])
 
   override def deserialize(bytes: Array[Byte]): ServiceInstance[T] = {
