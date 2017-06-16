@@ -4,8 +4,7 @@ import com.twitter.finagle.{Dtab, Path}
 import com.twitter.finagle.buoyant.Dst
 import com.twitter.finagle.http.{Request, Version}
 import com.twitter.util.Future
-import io.buoyant.router.RoutingFactory
-import io.buoyant.router.RoutingFactory.{IdentifiedRequest, RequestIdentification, UnidentifiedRequest}
+import io.buoyant.router.RoutingFactory.{IdentifiedRequest, Identifier, RequestIdentification, UnidentifiedRequest}
 
 object MethodTenantHostIdentifier {
 
@@ -14,14 +13,14 @@ object MethodTenantHostIdentifier {
   def mk(
     prefix: Path,
     baseDtab: () => Dtab = () => Dtab.base
-  ): RoutingFactory.Identifier[Request] = MethodTenantHostIdentifier(prefix, baseDtab, TenantHeader)
+  ): Identifier[Request] = MethodTenantHostIdentifier(prefix, baseDtab, TenantHeader)
 }
 
 case class MethodTenantHostIdentifier(
   prefix: Path,
   baseDtab: () => Dtab = () => Dtab.base,
   tenantHeader: String
-) extends RoutingFactory.Identifier[Request] {
+) extends Identifier[Request] {
 
   private[this] def mkPath(path: Path): Dst.Path =
     Dst.Path(prefix ++ path, baseDtab(), Dtab.local)
