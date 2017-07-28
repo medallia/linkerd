@@ -96,7 +96,7 @@ class KafkaRawZipkinTracer(
   brokerList: String,
   numRetries: Int = 3, //this is the kafka default.
   topic: String = "zipkin",
-  timer: Timer = DefaultTimer.twitter,
+  timer: Timer = DefaultTimer.getInstance,
   statsReceiver: StatsReceiver = DefaultStatsReceiver
 ) extends RawZipkinTracer(statsReceiver, timer) {
   private val METADATA_FETCH_TIMEOUT_MS_CONFIG: Int = 3000
