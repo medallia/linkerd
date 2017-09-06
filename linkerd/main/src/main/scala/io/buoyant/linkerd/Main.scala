@@ -28,11 +28,12 @@ object Main extends App {
   def main() {
     val build = Build.load("/io/buoyant/linkerd/build.properties")
     log.info("linkerd %s (rev=%s) built at %s", build.version, build.revision, build.name)
-    reportOpenSSLVersion()
 
     args match {
       case Array(path) =>
         val config = loadLinker(path)
+        reportOpenSSLVersion(config)
+
         val linker = config.mk()
         val admin = initAdmin(config, linker)
         val telemeters = linker.telemeters.map(_.run())
@@ -57,18 +58,21 @@ object Main extends App {
   }
 
   // Just logs the availability of tcnative ssl binding, for troubleshooting
-  private def reportOpenSSLVersion(): Unit = {
-    try {
-      if (OpenSsl.isAvailable) {
-        val version = OpenSsl.versionString()
-        val ciphers = OpenSsl.availableOpenSslCipherSuites()
-        log.info(s"Native OpenSSL available! version: $version, ciphers: $ciphers")
-      } else {
-        log.warning(OpenSsl.unavailabilityCause(), "No native OpenSSL available")
-      }
-    } catch {
-      case ex: Exception => {
-        log.warning(ex, "No native OpenSSL available")
+  private def reportOpenSSLVersion(config: Linker.LinkerConfig): Unit = {
+    if (config.routers.exists(_.servers.exists(_.tls.isDefined))) {
+      log.info(s"TLS required, looking for tcnative binding ...")
+      try {
+        if (OpenSsl.isAvailable) {
+          val version = OpenSsl.versionString()
+          val ciphers = OpenSsl.availableOpenSslCipherSuites()
+          log.info(s"Native OpenSSL available! version: $version, ciphers: $ciphers")
+        } else {
+          log.warning(OpenSsl.unavailabilityCause(), "No native OpenSSL available")
+        }
+      } catch {
+        case ex: Exception => {
+          log.warning(ex, "No native OpenSSL available")
+        }
       }
     }
   }
