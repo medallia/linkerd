@@ -6,6 +6,9 @@ import io.buoyant.admin.{App, Build}
 import io.buoyant.linkerd.admin.LinkerdAdmin
 import java.io.File
 import java.net.{InetSocketAddress, NetworkInterface}
+
+import io.netty.handler.ssl.OpenSsl
+
 import scala.collection.JavaConverters._
 import scala.io.Source
 import sun.misc.{Signal, SignalHandler}
@@ -25,6 +28,7 @@ object Main extends App {
   def main() {
     val build = Build.load("/io/buoyant/linkerd/build.properties")
     log.info("linkerd %s (rev=%s) built at %s", build.version, build.revision, build.name)
+    reportOpenSSLVersion()
 
     args match {
       case Array(path) =>
@@ -49,6 +53,23 @@ object Main extends App {
         Await.result(admin)
 
       case _ => exitOnError("usage: linkerd path/to/config")
+    }
+  }
+
+  // Just logs the availability of tcnative ssl binding, for troubleshooting
+  private def reportOpenSSLVersion(): Unit = {
+    try {
+      if (OpenSsl.isAvailable) {
+        val version = OpenSsl.versionString()
+        val ciphers = OpenSsl.availableOpenSslCipherSuites()
+        log.info(s"Native OpenSSL available! version: $version, ciphers: $ciphers")
+      } else {
+        log.warning(OpenSsl.unavailabilityCause(), "No native OpenSSL available")
+      }
+    } catch {
+      case ex: Exception => {
+        log.warning(ex, "No native OpenSSL available")
+      }
     }
   }
 
