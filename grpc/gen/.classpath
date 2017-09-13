@@ -1,0 +1,46 @@
+<classpath>
+  <classpathentry kind="src" path="src/main/scala"/>
+  <classpathentry kind="con" path="org.scala-ide.sdt.launching.SCALA_CONTAINER"></classpathentry>
+  <classpathentry sourcepath="/Users/afiore/.ivy2/cache/com.github.ghik/silencer-lib_2.12/srcs/silencer-lib_2.12-0.5-sources.jar" kind="lib" path="/Users/afiore/.ivy2/cache/com.github.ghik/silencer-lib_2.12/jars/silencer-lib_2.12-0.5.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/afiore/.ivy2/cache/com.github.ghik/silencer-lib_2.12/docs/silencer-lib_2.12-0.5-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/afiore/.ivy2/cache/com.google.protobuf/protobuf-java/srcs/protobuf-java-3.1.0-sources.jar" kind="lib" path="/Users/afiore/.ivy2/cache/com.google.protobuf/protobuf-java/bundles/protobuf-java-3.1.0.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/afiore/.ivy2/cache/com.google.protobuf/protobuf-java/docs/protobuf-java-3.1.0-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/afiore/.ivy2/cache/com.twitter/util-app_2.12/srcs/util-app_2.12-6.43.0-sources.jar" kind="lib" path="/Users/afiore/.ivy2/cache/com.twitter/util-app_2.12/jars/util-app_2.12-6.43.0.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/afiore/.ivy2/cache/com.twitter/util-app_2.12/docs/util-app_2.12-6.43.0-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/afiore/.ivy2/cache/com.twitter/util-core_2.12/srcs/util-core_2.12-6.43.0-sources.jar" kind="lib" path="/Users/afiore/.ivy2/cache/com.twitter/util-core_2.12/jars/util-core_2.12-6.43.0.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/afiore/.ivy2/cache/com.twitter/util-core_2.12/docs/util-core_2.12-6.43.0-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/afiore/.ivy2/cache/com.twitter/util-function_2.12/srcs/util-function_2.12-6.43.0-sources.jar" kind="lib" path="/Users/afiore/.ivy2/cache/com.twitter/util-function_2.12/jars/util-function_2.12-6.43.0.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/afiore/.ivy2/cache/com.twitter/util-function_2.12/docs/util-function_2.12-6.43.0-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/afiore/.ivy2/cache/org.scala-lang.modules/scala-parser-combinators_2.12/srcs/scala-parser-combinators_2.12-1.0.4-sources.jar" kind="lib" path="/Users/afiore/.ivy2/cache/org.scala-lang.modules/scala-parser-combinators_2.12/bundles/scala-parser-combinators_2.12-1.0.4.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/afiore/.ivy2/cache/org.scala-lang.modules/scala-parser-combinators_2.12/docs/scala-parser-combinators_2.12-1.0.4-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/afiore/.ivy2/cache/com.twitter/util-registry_2.12/srcs/util-registry_2.12-6.43.0-sources.jar" kind="lib" path="/Users/afiore/.ivy2/cache/com.twitter/util-registry_2.12/jars/util-registry_2.12-6.43.0.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/afiore/.ivy2/cache/com.twitter/util-registry_2.12/docs/util-registry_2.12-6.43.0-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/afiore/.ivy2/cache/com.google.guava/guava/srcs/guava-19.0-sources.jar" kind="lib" path="/Users/afiore/.ivy2/cache/com.google.guava/guava/bundles/guava-19.0.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/afiore/.ivy2/cache/com.google.guava/guava/docs/guava-19.0-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+  <classpathentry kind="output" path="bin"/>
+</classpath>

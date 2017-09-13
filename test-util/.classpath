@@ -1,0 +1,77 @@
+<classpath>
+  <classpathentry kind="src" path="src/main/scala"/>
+  <classpathentry kind="con" path="org.scala-ide.sdt.launching.SCALA_CONTAINER"></classpathentry>
+  <classpathentry sourcepath="/Users/afiore/.ivy2/cache/com.github.ghik/silencer-lib_2.12/srcs/silencer-lib_2.12-0.5-sources.jar" kind="lib" path="/Users/afiore/.ivy2/cache/com.github.ghik/silencer-lib_2.12/jars/silencer-lib_2.12-0.5.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/afiore/.ivy2/cache/com.github.ghik/silencer-lib_2.12/docs/silencer-lib_2.12-0.5-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/afiore/.ivy2/cache/org.scalatest/scalatest_2.12/srcs/scalatest_2.12-3.0.1-sources.jar" kind="lib" path="/Users/afiore/.ivy2/cache/org.scalatest/scalatest_2.12/bundles/scalatest_2.12-3.0.1.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/afiore/.ivy2/cache/org.scalatest/scalatest_2.12/docs/scalatest_2.12-3.0.1-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/afiore/.ivy2/cache/org.scalactic/scalactic_2.12/srcs/scalactic_2.12-3.0.1-sources.jar" kind="lib" path="/Users/afiore/.ivy2/cache/org.scalactic/scalactic_2.12/bundles/scalactic_2.12-3.0.1.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/afiore/.ivy2/cache/org.scalactic/scalactic_2.12/docs/scalactic_2.12-3.0.1-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/afiore/.ivy2/cache/org.scala-lang.modules/scala-xml_2.12/srcs/scala-xml_2.12-1.0.5-sources.jar" kind="lib" path="/Users/afiore/.ivy2/cache/org.scala-lang.modules/scala-xml_2.12/bundles/scala-xml_2.12-1.0.5.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/afiore/.ivy2/cache/org.scala-lang.modules/scala-xml_2.12/docs/scala-xml_2.12-1.0.5-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/afiore/.ivy2/cache/org.scala-lang.modules/scala-parser-combinators_2.12/srcs/scala-parser-combinators_2.12-1.0.4-sources.jar" kind="lib" path="/Users/afiore/.ivy2/cache/org.scala-lang.modules/scala-parser-combinators_2.12/bundles/scala-parser-combinators_2.12-1.0.4.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/afiore/.ivy2/cache/org.scala-lang.modules/scala-parser-combinators_2.12/docs/scala-parser-combinators_2.12-1.0.4-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/afiore/.ivy2/cache/com.twitter/util-core_2.12/srcs/util-core_2.12-6.43.0-sources.jar" kind="lib" path="/Users/afiore/.ivy2/cache/com.twitter/util-core_2.12/jars/util-core_2.12-6.43.0.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/afiore/.ivy2/cache/com.twitter/util-core_2.12/docs/util-core_2.12-6.43.0-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/afiore/.ivy2/cache/com.twitter/util-function_2.12/srcs/util-function_2.12-6.43.0-sources.jar" kind="lib" path="/Users/afiore/.ivy2/cache/com.twitter/util-function_2.12/jars/util-function_2.12-6.43.0.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/afiore/.ivy2/cache/com.twitter/util-function_2.12/docs/util-function_2.12-6.43.0-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/afiore/.ivy2/cache/com.twitter/util-logging_2.12/srcs/util-logging_2.12-6.43.0-sources.jar" kind="lib" path="/Users/afiore/.ivy2/cache/com.twitter/util-logging_2.12/jars/util-logging_2.12-6.43.0.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/afiore/.ivy2/cache/com.twitter/util-logging_2.12/docs/util-logging_2.12-6.43.0-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/afiore/.ivy2/cache/com.twitter/util-app_2.12/srcs/util-app_2.12-6.43.0-sources.jar" kind="lib" path="/Users/afiore/.ivy2/cache/com.twitter/util-app_2.12/jars/util-app_2.12-6.43.0.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/afiore/.ivy2/cache/com.twitter/util-app_2.12/docs/util-app_2.12-6.43.0-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/afiore/.ivy2/cache/com.twitter/util-registry_2.12/srcs/util-registry_2.12-6.43.0-sources.jar" kind="lib" path="/Users/afiore/.ivy2/cache/com.twitter/util-registry_2.12/jars/util-registry_2.12-6.43.0.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/afiore/.ivy2/cache/com.twitter/util-registry_2.12/docs/util-registry_2.12-6.43.0-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/afiore/.ivy2/cache/com.google.guava/guava/srcs/guava-19.0-sources.jar" kind="lib" path="/Users/afiore/.ivy2/cache/com.google.guava/guava/bundles/guava-19.0.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/afiore/.ivy2/cache/com.google.guava/guava/docs/guava-19.0-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/afiore/.ivy2/cache/com.twitter/util-stats_2.12/srcs/util-stats_2.12-6.43.0-sources.jar" kind="lib" path="/Users/afiore/.ivy2/cache/com.twitter/util-stats_2.12/jars/util-stats_2.12-6.43.0.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/afiore/.ivy2/cache/com.twitter/util-stats_2.12/docs/util-stats_2.12-6.43.0-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/afiore/.ivy2/cache/com.twitter/util-lint_2.12/srcs/util-lint_2.12-6.43.0-sources.jar" kind="lib" path="/Users/afiore/.ivy2/cache/com.twitter/util-lint_2.12/jars/util-lint_2.12-6.43.0.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/afiore/.ivy2/cache/com.twitter/util-lint_2.12/docs/util-lint_2.12-6.43.0-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry sourcepath="/Users/afiore/.ivy2/cache/com.github.ben-manes.caffeine/caffeine/srcs/caffeine-2.3.4-sources.jar" kind="lib" path="/Users/afiore/.ivy2/cache/com.github.ben-manes.caffeine/caffeine/jars/caffeine-2.3.4.jar">
+    <attributes>
+      <attribute name="javadoc_location" value="jar:file:/Users/afiore/.ivy2/cache/com.github.ben-manes.caffeine/caffeine/docs/caffeine-2.3.4-javadoc.jar!/"/>
+    </attributes>
+  </classpathentry>
+  <classpathentry kind="lib" path="/Users/afiore/.ivy2/cache/com.google.code.findbugs/jsr305/jars/jsr305-2.0.1.jar"/>
+  <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+  <classpathentry kind="output" path="bin"/>
+</classpath>

@@ -9,17 +9,19 @@ import io.buoyant.router.RoutingFactory.{IdentifiedRequest, Identifier, RequestI
 object MethodTenantHostIdentifier {
 
   val TenantHeader = "X-Medallia-Rpc-Tenant"
+  val EnvironmentHeader = "X-Medallia-Rpc-Environment"
 
   def mk(
     prefix: Path,
     baseDtab: () => Dtab = () => Dtab.base
-  ): Identifier[Request] = MethodTenantHostIdentifier(prefix, baseDtab, TenantHeader)
+  ): Identifier[Request] = MethodTenantHostIdentifier(prefix, baseDtab, TenantHeader, EnvironmentHeader)
 }
 
 case class MethodTenantHostIdentifier(
   prefix: Path,
   baseDtab: () => Dtab = () => Dtab.base,
-  tenantHeader: String
+  tenantHeader: String,
+  environmentHeader: String
 ) extends Identifier[Request] {
 
   private[this] def mkPath(path: Path): Dst.Path =
@@ -31,8 +33,13 @@ case class MethodTenantHostIdentifier(
         case Some(host) if host.nonEmpty =>
           req.headerMap.get(tenantHeader) match {
             case Some(tenant) =>
-              val dst = mkPath(Path.Utf8("1.1", req.method.toString, tenant, host))
-              Future.value(new IdentifiedRequest(dst, req))
+              req.headerMap.get(environmentHeader) match {
+                case Some(environment) =>
+                  val dst = mkPath(Path.Utf8("1.1", req.method.toString, environment, tenant, host))
+                  Future.value(new IdentifiedRequest(dst, req))
+                case None =>
+                  Future.value(new UnidentifiedRequest(s"$environmentHeader header is absent"))
+              }
             case None =>
               Future.value(new UnidentifiedRequest(s"$tenantHeader header is absent"))
           }

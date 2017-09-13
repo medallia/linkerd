@@ -57,11 +57,11 @@ class CuratorSDNamer(zkConnectStr: String) extends Namer with Closable with Clos
     log.info(s"Binding for path %s", path)
 
     path match {
-      case Path.Utf8(tenant, serviceName) =>
-        log.info(s"tenant %s serviceName %s", tenant, serviceName)
+      case Path.Utf8(environment, tenant, serviceName) =>
+        log.info(s"environment %s tenant %s serviceName %s", environment, tenant, serviceName)
 
         val serviceCacheShared = newServiceCache(serviceName)
-        val serviceCacheTenant = newServiceCache(CuratorSDCommon.getServiceFullPath(serviceName, Some(tenant)))
+        val serviceCacheTenant = newServiceCache(CuratorSDCommon.getServiceFullPath(serviceName, Some(tenant), Some(environment)))
 
         val addrInit = getAddress(serviceCacheShared, serviceCacheTenant)
         val addrVar = Var.async(addrInit) { update =>

@@ -28,7 +28,7 @@ class CuratorSDAnnouncer(zkConnectStr: String) extends FutureAnnouncer {
     val tenantStr = tenant.getOrElse("(multi-tenant)")
     log.info("Announcing %s, tenant: %s address: %s, ZK cluster: %s", serviceId, tenantStr, address, zkConnectStr)
 
-    val serviceFullPath = CuratorSDCommon.getServiceFullPath(serviceId, tenant)
+    val serviceFullPath = CuratorSDCommon.getServiceFullPath(serviceId, tenant, None)
 
     // TODO (future) how to specify https? Handle this when we work on the Namer.
     val addressHostString = address.getHostString

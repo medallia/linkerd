@@ -36,8 +36,9 @@ object CuratorSDCommon {
     serviceDiscoveryInfo
   }
 
-  def getServiceFullPath(serviceId: String, tenant: Option[String]): String = {
-    tenant.map(t => Joiner.on(".").join(serviceId, t)).getOrElse(serviceId)
+  def getServiceFullPath(serviceId: String, tenant: Option[String], environment: Option[String]): String = {
+    val x = tenant.map(t => Joiner.on("/").join(serviceId, t)).getOrElse(serviceId)
+    environment.map(e => Joiner.on("/").join(x, e)).getOrElse(x)
   }
 
 }
