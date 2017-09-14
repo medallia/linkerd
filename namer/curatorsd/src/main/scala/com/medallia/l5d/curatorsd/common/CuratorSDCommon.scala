@@ -24,6 +24,8 @@ object CuratorSDCommon {
 
   private val curatorClientCache = CacheBuilder.newBuilder().build[String, ServiceDiscoveryInfo]
 
+  private val log = Logger(getClass)
+
   /**
    * @param zkConnectStr ZK connection string
    * @return Service Discovery set of objects which needs to be closed
@@ -37,8 +39,9 @@ object CuratorSDCommon {
   }
 
   def getServiceFullPath(serviceId: String, tenant: Option[String], environment: Option[String]): String = {
-    val x = tenant.map(t => Joiner.on("/").join(serviceId, t)).getOrElse(serviceId)
-    environment.map(e => Joiner.on("/").join(x, e)).getOrElse(x)
+    val f = List(environment.getOrElse("_"), tenant.getOrElse("_"), serviceId).mkString("/")
+    println(s"Service full path $f")
+    f
   }
 
 }
@@ -77,6 +80,7 @@ class ScalaJsonInstanceSerializer[T](val targetClass: Class[T]) extends Instance
   private val serviceInstanceClass = objectMapper.getTypeFactory.constructType(classOf[ServiceInstance[T]])
 
   override def deserialize(bytes: Array[Byte]): ServiceInstance[T] = {
+    println(s"deserilaze ${new String(bytes)}")
     val rawServiceInstance: ServiceInstance[T] = objectMapper.readValue(bytes, serviceInstanceClass)
     targetClass.cast(rawServiceInstance.getPayload) // just to verify that it's the correct type
     rawServiceInstance.asInstanceOf[ServiceInstance[T]]

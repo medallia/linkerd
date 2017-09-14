@@ -13,3 +13,7 @@ npm-debug.log
 .DS_Store
 
 **/*.iml
+
+.project
+.classpath
+.settings

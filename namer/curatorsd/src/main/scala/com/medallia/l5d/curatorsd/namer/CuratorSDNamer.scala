@@ -31,8 +31,12 @@ class CuratorSDNamer(zkConnectStr: String) extends Namer with Closable with Clos
   private val serviceDiscoveryInfo = CuratorSDCommon.createServiceDiscovery(zkConnectStr)
 
   private def instanceToAddress(instance: ServiceInstance[ServiceInstanceInfo]): Address = {
+    println(s"instanceToAddress $instance")
+
     val address = instance.getAddress
     val port = instance.getPort
+    println(s"instanceToAddress $address $port")
+
     if (address != null && port != null) {
       Address(address, port)
     } else {
@@ -54,23 +58,28 @@ class CuratorSDNamer(zkConnectStr: String) extends Namer with Closable with Clos
   }
 
   override def lookup(path: Path): Activity[NameTree[Name]] = {
-    log.info(s"Binding for path %s", path)
+    println(s"Binding for path $path")
 
     path match {
       case Path.Utf8(environment, tenant, serviceName) =>
-        log.info(s"environment %s tenant %s serviceName %s", environment, tenant, serviceName)
+        println(s"environment $environment tenant $tenant serviceName $serviceName")
 
-        val serviceCacheShared = newServiceCache(serviceName)
+        // val serviceCacheShared = newServiceCache(serviceName)
+        //println("cache shared")
+        //println(serviceCacheShared.getInstances.asScala)
         val serviceCacheTenant = newServiceCache(CuratorSDCommon.getServiceFullPath(serviceName, Some(tenant), Some(environment)))
+        println("cache tenant")
+        println(serviceCacheTenant.getInstances.asScala)
+        //val addrInit = getAddress(serviceCacheShared, serviceCacheTenant)
 
-        val addrInit = getAddress(serviceCacheShared, serviceCacheTenant)
+        val addrInit = getAddress(serviceCacheTenant, serviceCacheTenant)
         val addrVar = Var.async(addrInit) { update =>
 
           val listener = new ServiceCacheListener {
 
             override def cacheChanged(): Unit = {
               log.info("Cache changed for %s", serviceName)
-              update() = getAddress(serviceCacheShared, serviceCacheTenant)
+              update() = getAddress(serviceCacheTenant, serviceCacheTenant)
             }
 
             override def stateChanged(client: CuratorFramework, newState: ConnectionState): Unit = {
@@ -79,18 +88,18 @@ class CuratorSDNamer(zkConnectStr: String) extends Namer with Closable with Clos
 
           }
 
-          serviceCacheShared.addListener(listener)
+          //serviceCacheShared.addListener(listener)
           serviceCacheTenant.addListener(listener)
 
           Closable.make { deadline =>
-            serviceCacheShared.removeListener(listener)
+            //serviceCacheShared.removeListener(listener)
             serviceCacheTenant.removeListener(listener)
             Future.Unit
           }
         }
         Activity.value(NameTree.Leaf(Name.Bound(addrVar, path, path)))
       case _ =>
-        Activity.exception(new IllegalArgumentException(s"Expected curator namer format: /tenant/serviceName, got $path"))
+        Activity.exception(new IllegalArgumentException(s"Expected curator namer format: /environment/tenant/serviceName, got $path"))
     }
   }
 
