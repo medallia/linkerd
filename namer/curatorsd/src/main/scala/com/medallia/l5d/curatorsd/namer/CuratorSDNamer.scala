@@ -42,7 +42,7 @@ class CuratorSDNamer(zkConnectStr: String) extends Namer with Closable with Clos
   }
 
   private def getAddress(caches: List[ServiceCache[ServiceInstanceInfo]]): Addr = {
-    val addrs = caches.flatMap(c => c.getInstances.asScala).map(instanceToAddress)
+    val addrs = caches.toStream.filter(!_.getInstances.asScala.isEmpty).head.getInstances.asScala.map(instanceToAddress(_))
     log.info(s"Binding to addresses $addrs")
     Addr.Bound(addrs.toSet, Addr.Metadata.empty)
   }
@@ -68,7 +68,14 @@ class CuratorSDNamer(zkConnectStr: String) extends Namer with Closable with Clos
         val serviceCacheEnvironmentV2 = newServiceCache(CuratorSDCommon.getServiceFullPathV2(serviceName, None, Some(environment)))
         val serviceCacheEnvironmentTenantV2 = newServiceCache(CuratorSDCommon.getServiceFullPathV2(serviceName, Some(tenant), Some(environment)))
 
-        val caches = List(serviceCacheSharedV1, serviceCacheTenantV1, serviceCacheSharedV2, serviceCacheTenantV2, serviceCacheEnvironmentV2, serviceCacheEnvironmentTenantV2)
+        val caches = List(
+          serviceCacheEnvironmentTenantV2,
+          serviceCacheEnvironmentV2,
+          serviceCacheTenantV2,
+          serviceCacheTenantV1,
+          serviceCacheSharedV2,
+          serviceCacheSharedV1
+        )
 
         val addrInit = getAddress(caches)
         val addrVar = Var.async(addrInit) { update =>
