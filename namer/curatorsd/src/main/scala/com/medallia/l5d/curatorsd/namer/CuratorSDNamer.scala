@@ -41,8 +41,8 @@ class CuratorSDNamer(zkConnectStr: String) extends Namer with Closable with Clos
     }
   }
 
-  private def getAddress(sharedCache: ServiceCache[ServiceInstanceInfo], tenantCache: ServiceCache[ServiceInstanceInfo]): Addr = {
-    val addrs = (sharedCache.getInstances.asScala ++ tenantCache.getInstances.asScala).map(instanceToAddress)
+  private def getAddress(caches: List[ServiceCache[ServiceInstanceInfo]]): Addr = {
+    val addrs = caches.flatMap(c => c.getInstances.asScala).map(instanceToAddress)
     log.info(s"Binding to addresses $addrs")
     Addr.Bound(addrs.toSet, Addr.Metadata.empty)
   }
@@ -57,20 +57,27 @@ class CuratorSDNamer(zkConnectStr: String) extends Namer with Closable with Clos
     log.info(s"Binding for path %s", path)
 
     path match {
-      case Path.Utf8(tenant, serviceName) =>
-        log.info(s"tenant %s serviceName %s", tenant, serviceName)
+      case Path.Utf8(environment, tenant, serviceName) =>
+        log.info(s"environment: $environment - tenant: $tenant - serviceName: $serviceName")
 
-        val serviceCacheShared = newServiceCache(serviceName)
-        val serviceCacheTenant = newServiceCache(CuratorSDCommon.getServiceFullPath(serviceName, Some(tenant)))
+        val serviceCacheSharedV1 = newServiceCache(CuratorSDCommon.getServiceFullPathV1(serviceName, None))
+        val serviceCacheTenantV1 = newServiceCache(CuratorSDCommon.getServiceFullPathV1(serviceName, Some(tenant)))
 
-        val addrInit = getAddress(serviceCacheShared, serviceCacheTenant)
+        val serviceCacheSharedV2 = newServiceCache(CuratorSDCommon.getServiceFullPathV2(serviceName, None, None))
+        val serviceCacheTenantV2 = newServiceCache(CuratorSDCommon.getServiceFullPathV2(serviceName, Some(tenant), None))
+        val serviceCacheEnvironmentV2 = newServiceCache(CuratorSDCommon.getServiceFullPathV2(serviceName, None, Some(environment)))
+        val serviceCacheEnvironmentTenantV2 = newServiceCache(CuratorSDCommon.getServiceFullPathV2(serviceName, Some(tenant), Some(environment)))
+
+        val caches = List(serviceCacheSharedV1, serviceCacheTenantV1, serviceCacheSharedV2, serviceCacheTenantV2, serviceCacheEnvironmentV2, serviceCacheEnvironmentTenantV2)
+
+        val addrInit = getAddress(caches)
         val addrVar = Var.async(addrInit) { update =>
 
           val listener = new ServiceCacheListener {
 
             override def cacheChanged(): Unit = {
               log.info("Cache changed for %s", serviceName)
-              update() = getAddress(serviceCacheShared, serviceCacheTenant)
+              update() = getAddress(caches)
             }
 
             override def stateChanged(client: CuratorFramework, newState: ConnectionState): Unit = {
@@ -79,18 +86,16 @@ class CuratorSDNamer(zkConnectStr: String) extends Namer with Closable with Clos
 
           }
 
-          serviceCacheShared.addListener(listener)
-          serviceCacheTenant.addListener(listener)
+          caches.foreach(_.addListener(listener))
 
           Closable.make { deadline =>
-            serviceCacheShared.removeListener(listener)
-            serviceCacheTenant.removeListener(listener)
+            caches.foreach(_.removeListener(listener))
             Future.Unit
           }
         }
         Activity.value(NameTree.Leaf(Name.Bound(addrVar, path, path)))
       case _ =>
-        Activity.exception(new IllegalArgumentException(s"Expected curator namer format: /tenant/serviceName, got $path"))
+        Activity.exception(new IllegalArgumentException(s"Expected curator namer format: /environment/tenant/serviceName, got $path"))
     }
   }
 
