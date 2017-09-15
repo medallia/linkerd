@@ -33,7 +33,8 @@ case class MethodEnvironmentTenantHostIdentifier(
         case Some(host) if host.nonEmpty =>
           req.headerMap.get(tenantHeader) match {
             case Some(tenant) =>
-              val dst = mkPath(Path.Utf8("1.1", req.method.toString, tenant, host))
+              val environment: String = req.headerMap.get(tenantHeader).getOrElse("_") //this is an optional header
+              val dst = mkPath(Path.Utf8("1.1", req.method.toString, environment, tenant, host))
               Future.value(new IdentifiedRequest(dst, req))
             case None =>
               Future.value(new UnidentifiedRequest(s"$tenantHeader header is absent"))
