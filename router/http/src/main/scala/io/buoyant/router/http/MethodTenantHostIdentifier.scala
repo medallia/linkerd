@@ -6,20 +6,22 @@ import com.twitter.finagle.http.{Request, Version}
 import com.twitter.util.Future
 import io.buoyant.router.RoutingFactory.{IdentifiedRequest, Identifier, RequestIdentification, UnidentifiedRequest}
 
-object MethodTenantHostIdentifier {
+object MethodEnvironmentTenantHostIdentifier {
 
   val TenantHeader = "X-Medallia-Rpc-Tenant"
+  val EnvironmentHeader = "X-Medallia-Rpc-Environment"
 
   def mk(
     prefix: Path,
     baseDtab: () => Dtab = () => Dtab.base
-  ): Identifier[Request] = MethodTenantHostIdentifier(prefix, baseDtab, TenantHeader)
+  ): Identifier[Request] = MethodEnvironmentTenantHostIdentifier(prefix, baseDtab, TenantHeader, EnvironmentHeader)
 }
 
-case class MethodTenantHostIdentifier(
+case class MethodEnvironmentTenantHostIdentifier(
   prefix: Path,
   baseDtab: () => Dtab = () => Dtab.base,
-  tenantHeader: String
+  tenantHeader: String,
+  environmentHeader: String
 ) extends Identifier[Request] {
 
   private[this] def mkPath(path: Path): Dst.Path =
