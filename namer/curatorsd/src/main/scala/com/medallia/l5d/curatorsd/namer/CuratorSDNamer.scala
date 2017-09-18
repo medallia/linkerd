@@ -42,7 +42,10 @@ class CuratorSDNamer(zkConnectStr: String) extends Namer with Closable with Clos
   }
 
   private def getAddress(caches: List[ServiceCache[ServiceInstanceInfo]]): Addr = {
-    val addrs = caches.toStream.filter(!_.getInstances.asScala.isEmpty).head.getInstances.asScala.map(instanceToAddress(_))
+    val addrs = caches.toStream
+      .find(!_.getInstances.asScala.isEmpty)
+      .map(_.getInstances.asScala.map(instanceToAddress(_)))
+      .getOrElse(List())
     log.info(s"Binding to addresses $addrs")
     Addr.Bound(addrs.toSet, Addr.Metadata.empty)
   }
