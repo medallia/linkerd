@@ -36,8 +36,12 @@ object CuratorSDCommon {
     serviceDiscoveryInfo
   }
 
-  def getServiceFullPath(serviceId: String, tenant: Option[String]): String = {
+  def getServiceFullPathV1(serviceId: String, tenant: Option[String]): String = {
     tenant.map(t => Joiner.on(".").join(serviceId, t)).getOrElse(serviceId)
+  }
+
+  def getServiceFullPathV2(serviceId: String, tenant: Option[String], environment: Option[String]): String = {
+    List(environment.getOrElse("_"), tenant.getOrElse("_"), serviceId).mkString("/")
   }
 
 }
