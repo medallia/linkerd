@@ -6,22 +6,28 @@ import com.twitter.finagle.http.Request
 import com.twitter.util.Future
 import io.buoyant.router.RoutingFactory.{IdentifiedRequest, Identifier, RequestIdentification, UnidentifiedRequest}
 
-object MethodTenantHostIdentifier {
+object EnvTenantHostIdentifier {
 
   def mk(
     prefix: Path,
     baseDtab: () => Dtab = () => Dtab.base
-  ): Identifier[Request] = MethodTenantHostIdentifier(prefix, baseDtab)
+  ): Identifier[Request] = EnvTenantHostIdentifier(prefix, baseDtab)
 
 }
 
-// TODO rename
-case class MethodTenantHostIdentifier(
+/**
+ * Identifier that creates a path based on these headers values (in order)
+ * <ol>
+ *   <li> X-Medallia-Rpc-Environment: Optional. "_" represents a cross environment request. Currently only used for QA Clusters.
+ *   <li> X-Medallia-Rpc-Tenant: Required. Tenant for the request
+ *   <li> Host: Required. Service name
+ * </ol>
+ */
+case class EnvTenantHostIdentifier(
   prefix: Path,
   baseDtab: () => Dtab = () => Dtab.base
 ) extends Identifier[Request] {
 
-  // TODO allow reconfiguration?s
   val HostHeader = "Host"
 
   val TenantHeader = "X-Medallia-Rpc-Tenant"

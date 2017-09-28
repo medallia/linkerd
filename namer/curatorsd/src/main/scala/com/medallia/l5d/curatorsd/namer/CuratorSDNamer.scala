@@ -56,6 +56,7 @@ class CuratorSDNamer(zkConnectStr: String) extends Namer with Closable with Clos
         val addrVar = Var.async(addrInit) { update =>
 
           val listener = new ServiceDiscoveryListener {
+
             override def serviceInstancesChanged(): Unit = {
               log.info("Cache changed for %s", serviceName)
               update() = getAddress(serviceDiscoveryInfo.serviceDiscovery.lookupAll(serviceId).asScala)

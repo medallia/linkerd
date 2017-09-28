@@ -40,8 +40,8 @@ case class ServiceDiscoveryInfo(zkConnectStr: String) extends RefCounted {
   private val log = Logger(getClass)
 
   private val serviceDiscoveryConfig = new ServiceDiscoveryConfig(zkConnectStr)
-    .setPreviousFormatEnabled(true) // TODO from config
-  // TODO more configuration
+    .setPreviousFormatEnabled(true)
+  // TODO from config
 
   val serviceDiscovery = new ServiceDiscovery(serviceDiscoveryConfig)
 

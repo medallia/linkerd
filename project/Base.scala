@@ -72,7 +72,7 @@ class Base extends Build {
     resolvers ++= Seq(
       "twitter-repo" at "https://maven.twttr.com",
       Resolver.mavenLocal,
-      "Local Maven Repository" at Path.userHome.asFile.toURI.toURL + ".m2/repository",
+      "Local Maven Repository" at Path.userHome.asFile.toURI.toURL + ".m2/repository", // mavenLocal doesn't seem to be enough
       Resolver.jcenterRepo,
       "typesafe" at "https://repo.typesafe.com/typesafe/releases",
       "Artifactory Realm" at "https://martifactory.io/mvn-virtual"
