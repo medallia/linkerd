@@ -1,6 +1,7 @@
 package com.medallia.l5d.curatorsd.announcer
 
-import com.fasterxml.jackson.annotation.JsonIgnore
+import com.fasterxml.jackson.annotation.{JsonIgnore, JsonProperty}
+import com.medallia.servicediscovery.ServiceDiscoveryRegistrar.RegistrationFormat
 import com.twitter.finagle.Path
 import io.buoyant.linkerd.{Announcer, AnnouncerConfig, AnnouncerInitializer}
 
@@ -14,6 +15,9 @@ case class CuratorSDConfig(zkConnectStr: String) extends AnnouncerConfig {
   @JsonIgnore
   override def defaultPrefix: Path = Path.read("/com.medallia.curatorsd")
 
-  override def mk(): Announcer = new CuratorSDAnnouncer(zkConnectStr)
+  @JsonProperty("format")
+  var _format: Option[String] = None
+
+  override def mk(): Announcer = new CuratorSDAnnouncer(zkConnectStr, _format.map(RegistrationFormat.valueOf).getOrElse(RegistrationFormat.V2))
 }
 
