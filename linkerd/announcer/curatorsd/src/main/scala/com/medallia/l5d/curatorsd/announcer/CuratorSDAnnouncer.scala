@@ -21,13 +21,13 @@ import io.buoyant.linkerd.FutureAnnouncer
  *   <li>environment is optional, "_" represents global services
  * </ul>
  */
-class CuratorSDAnnouncer(zkConnectStr: String, registrationFormat: RegistrationFormat) extends FutureAnnouncer {
+class CuratorSDAnnouncer(zkConnectStr: String, registrationFormat: RegistrationFormat, backwardsCompatible: Boolean) extends FutureAnnouncer {
 
   override val scheme: String = "zk-curator"
 
   private val log = Logger(getClass)
 
-  val serviceDiscoveryInfo: ServiceDiscoveryInfo = CuratorSDCommon.createServiceDiscovery(zkConnectStr)
+  val serviceDiscoveryInfo: ServiceDiscoveryInfo = CuratorSDCommon.createServiceDiscovery(zkConnectStr, backwardsCompatible)
 
   private def validProtocol(protocol: String): Boolean = protocol == "http" || protocol == "https"
 

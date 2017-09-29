@@ -17,9 +17,9 @@ object CuratorSDCommon {
    * @param zkConnectStr ZK connection string
    * @return Service Discovery set of objects which needs to be closed
    */
-  def createServiceDiscovery(zkConnectStr: String): ServiceDiscoveryInfo = {
+  def createServiceDiscovery(zkConnectStr: String, backwardsCompatible: Boolean): ServiceDiscoveryInfo = {
     val serviceDiscoveryInfo = serviceDiscoveryCache.get(zkConnectStr, new Callable[ServiceDiscoveryInfo] {
-      def call = ServiceDiscoveryInfo(zkConnectStr)
+      def call = ServiceDiscoveryInfo(zkConnectStr, backwardsCompatible)
     })
     serviceDiscoveryInfo.addReference()
     serviceDiscoveryInfo
@@ -35,14 +35,14 @@ object CuratorSDCommon {
 
 }
 
-case class ServiceDiscoveryInfo(zkConnectStr: String) extends RefCounted {
+case class ServiceDiscoveryInfo(zkConnectStr: String, backwardsCompatible: Boolean) extends RefCounted {
 
   private val log = Logger(getClass)
 
   private val serviceDiscoveryConfig = new ServiceDiscoveryConfig(zkConnectStr)
-    .setPreviousFormatEnabled(true)
-  // TODO from config
+    .setPreviousFormatEnabled(backwardsCompatible)
 
+  log.info("Starting service discovery with config %s", serviceDiscoveryConfig)
   val serviceDiscovery = new ServiceDiscovery(serviceDiscoveryConfig)
 
   protected override def performClose(): Unit = {
