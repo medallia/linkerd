@@ -80,8 +80,10 @@ object Http extends Router[Request, Response] with FinagleServer[Request, Respon
 
   object Server {
     val stack: Stack[ServiceFactory[Request, Response]] =
-      (AddForwardedHeader.module +: FinagleHttp.server.stack)
+      (AddForwardedHeader.module +: FinagleHttp.server.stack +: ApplyHostForwardedHeader.module)
         .insertBefore(http.TracingFilter.role, ProxyRewriteFilter.module)
+    //.insertBefore(ApplyHostForwardedHeader.module.role, ApplyHostForwardedHeader.module) //Replaces Host with forwarded header
+    //.insertAfter(ApplyHostForwardedHeader.module.role, ApplyHostForwardedHeader.module) //Replaces Host with forwarded header
 
     private val serverResponseClassifier = ClassifiedRetries.orElse(
       ClassifierFilter.successClassClassifier,
@@ -100,4 +102,5 @@ object Http extends Router[Request, Response] with FinagleServer[Request, Respon
 
   def serve(addr: SocketAddress, factory: ServiceFactory[Request, Response]): ListeningServer =
     server.serve(addr, factory)
+
 }
