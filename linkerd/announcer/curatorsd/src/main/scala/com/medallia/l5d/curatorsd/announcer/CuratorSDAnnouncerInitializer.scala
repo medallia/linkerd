@@ -10,7 +10,7 @@ class CuratorSDAnnouncerInitializer extends AnnouncerInitializer {
   override def configId = "com.medallia.curatorsd"
 }
 
-case class CuratorSDConfig(zkConnectStr: String, format: Option[String], backwardsCompatible: Option[Boolean]) extends AnnouncerConfig {
+case class CuratorSDConfig(zkConnectStr: String, format: Option[String], backwardsCompatibility: Option[String]) extends AnnouncerConfig {
 
   @JsonIgnore
   override def defaultPrefix: Path = Path.read("/com.medallia.curatorsd")
@@ -18,7 +18,7 @@ case class CuratorSDConfig(zkConnectStr: String, format: Option[String], backwar
   override def mk(): Announcer = new CuratorSDAnnouncer(
     zkConnectStr,
     format.map(RegistrationFormat.valueOf).getOrElse(RegistrationFormat.V2),
-    backwardsCompatible.getOrElse(false)
+    backwardsCompatibility
   )
 }
 

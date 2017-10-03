@@ -3,24 +3,38 @@ package com.medallia.l5d.curatorsd.common
 import java.util.concurrent.Callable
 import java.util.concurrent.atomic.{AtomicBoolean, AtomicInteger}
 
+import com.google.common.base.Enums
 import com.google.common.cache.CacheBuilder
 import com.medallia.servicediscovery.ServiceDiscovery
 import com.medallia.servicediscovery.ServiceDiscoveryConfig
+import com.medallia.servicediscovery.ServiceDiscoveryRegistrar.RegistrationFormat
 import com.twitter.logging.Logger
 import com.twitter.util.{Closable, Future, Time}
+
+import scala.language.implicitConversions
 
 object CuratorSDCommon {
 
   private val serviceDiscoveryCache = CacheBuilder.newBuilder().build[String, ServiceDiscoveryInfo]
 
+  implicit def callable[T](f: () => T): Callable[T] = () => f()
+
   /**
    * @param zkConnectStr ZK connection string
+   * @param backwardsCompatibility oldest format we should support. Default
    * @return Service Discovery set of objects which needs to be closed
    */
-  def createServiceDiscovery(zkConnectStr: String, backwardsCompatible: Boolean): ServiceDiscoveryInfo = {
-    val serviceDiscoveryInfo = serviceDiscoveryCache.get(zkConnectStr, new Callable[ServiceDiscoveryInfo] {
-      def call = ServiceDiscoveryInfo(zkConnectStr, backwardsCompatible)
-    })
+  def createServiceDiscovery(zkConnectStr: String, backwardsCompatibility: Option[String]): ServiceDiscoveryInfo = {
+
+    val parsedBackwardsCompatibility = backwardsCompatibility
+      .flatMap(format => Option(Enums
+        .getIfPresent(classOf[RegistrationFormat], format)
+        .orNull()))
+
+    val serviceDiscoveryInfo = serviceDiscoveryCache.get(
+      zkConnectStr,
+      callable[ServiceDiscoveryInfo](() => ServiceDiscoveryInfo(zkConnectStr, parsedBackwardsCompatibility))
+    )
     serviceDiscoveryInfo.addReference()
     serviceDiscoveryInfo
   }
@@ -35,12 +49,12 @@ object CuratorSDCommon {
 
 }
 
-case class ServiceDiscoveryInfo(zkConnectStr: String, backwardsCompatible: Boolean) extends RefCounted {
+case class ServiceDiscoveryInfo(zkConnectStr: String, backwardsCompatibility: Option[RegistrationFormat]) extends RefCounted {
 
   private val log = Logger(getClass)
 
   private val serviceDiscoveryConfig = new ServiceDiscoveryConfig(zkConnectStr)
-    .setPreviousFormatEnabled(backwardsCompatible)
+    .setBackwardsCompatibility(backwardsCompatibility.orNull)
 
   log.info("Starting service discovery with config %s", serviceDiscoveryConfig)
   val serviceDiscovery = new ServiceDiscovery(serviceDiscoveryConfig)

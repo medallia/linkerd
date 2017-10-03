@@ -11,7 +11,7 @@ class CuratorSDInitializer extends NamerInitializer {
 
 object CuratorSDInitializer extends CuratorSDInitializer
 
-case class CuratorSDConfig(zkConnectStr: String, backwardsCompatible: Option[Boolean]) extends NamerConfig {
+case class CuratorSDConfig(zkConnectStr: String, backwardsCompatibility: Option[String]) extends NamerConfig {
 
   @JsonIgnore
   override def defaultPrefix: Path = Path.read("/com.medallia.curatorsd")
@@ -19,8 +19,5 @@ case class CuratorSDConfig(zkConnectStr: String, backwardsCompatible: Option[Boo
   /**
    * Construct a namer.
    */
-  def newNamer(params: Stack.Params) = new CuratorSDNamer(
-    zkConnectStr,
-    backwardsCompatible.getOrElse(false)
-  )
+  def newNamer(params: Stack.Params) = new CuratorSDNamer(zkConnectStr, backwardsCompatibility)
 }

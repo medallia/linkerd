@@ -21,11 +21,11 @@ import scala.collection.JavaConverters._
  * and returns a dynamic representation of the resolution of the path into a
  * tree of Names.
  */
-class CuratorSDNamer(zkConnectStr: String, backwardsCompatible: Boolean) extends Namer with Closable with CloseAwaitably {
+class CuratorSDNamer(zkConnectStr: String, backwardsCompatibility: Option[String]) extends Namer with Closable with CloseAwaitably {
 
   private val log = Logger(getClass)
 
-  private val serviceDiscoveryInfo = CuratorSDCommon.createServiceDiscovery(zkConnectStr, backwardsCompatible)
+  private val serviceDiscoveryInfo = CuratorSDCommon.createServiceDiscovery(zkConnectStr, backwardsCompatibility)
 
   private def instanceToAddress(instance: ServiceInstance[ServiceInstanceInfo]): Address = {
     val address = instance.getAddress
