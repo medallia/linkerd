@@ -168,7 +168,6 @@ case class HttpServerConfig(
   @JsonIgnore
   override def serverParams = {
     val params = super.serverParams + AddForwardedHeaderConfig.Param(addForwardedHeader)
-    println(s"params: $params engine: $engine")
     engine match {
       case None => params
       case Some(engine) => engine.mk(params)
