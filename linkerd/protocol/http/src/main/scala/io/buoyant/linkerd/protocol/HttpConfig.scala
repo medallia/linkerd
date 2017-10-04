@@ -21,7 +21,6 @@ import io.buoyant.linkerd.protocol.http._
 import io.buoyant.router.{ClassifiedRetries, Http, RoutingFactory}
 import io.buoyant.router.RoutingFactory.{IdentifiedRequest, RequestIdentification, UnidentifiedRequest}
 import io.buoyant.router.http.AddForwardedHeader
-import io.buoyant.router.http.ApplyHostForwardedHeader
 import scala.collection.JavaConverters._
 
 class HttpInitializer extends ProtocolInitializer.Simple {
@@ -163,13 +162,12 @@ trait HttpSvcConfig extends SvcConfig {
 
 case class HttpServerConfig(
   engine: Option[HttpEngine],
-  addForwardedHeader: Option[AddForwardedHeaderConfig],
-  applyHostForwardedHeader: Option[ApplyHostForwardedHeaderConfig]
+  addForwardedHeader: Option[AddForwardedHeaderConfig]
 ) extends ServerConfig {
 
   @JsonIgnore
   override def serverParams = {
-    val params = super.serverParams + AddForwardedHeaderConfig.Param(addForwardedHeader) + ApplyHostForwardedHeaderConfig.Param(applyHostForwardedHeader)
+    val params = super.serverParams + AddForwardedHeaderConfig.Param(addForwardedHeader)
     println(s"params: $params engine: $engine")
     engine match {
       case None => params
