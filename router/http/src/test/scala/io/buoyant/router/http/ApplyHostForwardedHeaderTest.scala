@@ -32,23 +32,29 @@ class ApplyHostForwardedHeaderTest extends FunSuite {
     val req = mkReq()
     req.host = "buoyant.pizza"
     val rsp = await(service(req))
-    val headers =
-      assert(rsp.contentString == "buoyant.pizza")
+    assert(rsp.contentString == "buoyant.pizza")
   }
 
   test("If Forwarded is present but withoud host element, request's host should not change") {
     val req = mkReq()
     req.host = "buoyant.pizza"
-    req.headerMap.add("Forwarded", "pepito=8.8.4.4")
+    req.headerMap.add("Forwarded", "nothost=8.8.4.4;key=value")
     val rsp = await(service(req))
-    val headers =
-      assert(rsp.contentString == "buoyant.pizza")
+    assert(rsp.contentString == "buoyant.pizza")
   }
 
   test("Host is changed if Forwarded header comes with host element") {
     val req = mkReq()
     req.host = "buoyant.pizza"
     req.headerMap.add("Forwarded", "host=8.8.4.4")
+    val rsp = await(service(req))
+    assert(rsp.contentString == "8.8.4.4")
+
+  }
+  test("Host is changed if Forwarded header comes with host element and others") {
+    val req = mkReq()
+    req.host = "buoyant.pizza"
+    req.headerMap.add("Forwarded", "value=key;;host=8.8.4.4;key=value;;")
     val rsp = await(service(req))
     assert(rsp.contentString == "8.8.4.4")
 

@@ -35,8 +35,10 @@ class ApplyHostForwardedHeader() extends SimpleFilter[Request, Response] {
 
   private def replaceHostWithForwardedHostIfExists(req: Request): Any = {
     val forwardedHostOp = getForwardedHost(req.headerMap)
-    forwardedHostOp.foreach(newHost => log.info("Replace Host: %s with %s", req.host, newHost))
-    forwardedHostOp.foreach(forwardedHost => req.headerMap.set(Fields.Host, forwardedHost))
+    forwardedHostOp.foreach(forwardedHost => {
+      log.info("Replace Host: %s with %s", req.host, forwardedHost)
+      req.headerMap.set(Fields.Host, forwardedHost)
+    })
   }
 }
 
