@@ -77,8 +77,6 @@ class HttpInitializer extends ProtocolInitializer.Simple {
       // so that any malframed requests it fails are counted as errors
       .insertAfter(StatsFilter.role, FramingFilter.serverModule)
       .insertBefore(AddForwardedHeader.module.role, AddForwardedHeaderConfig.module)
-      .insertBefore(ApplyHostForwardedHeader.module.role, ApplyHostForwardedHeaderConfig.module)
-      .insertAfter(ApplyHostForwardedHeader.module.role, ApplyHostForwardedHeaderConfig.module)
 
     Http.server.withStack(stk)
   }
