@@ -1,7 +1,7 @@
 package io.buoyant.router.http
 
 import com.twitter.finagle._
-import com.twitter.finagle.http.{Fields, Request, Response}
+import com.twitter.finagle.http.{Fields, Request, Response, HeaderMap}
 import com.twitter.util.Future
 import java.net.{Inet4Address, Inet6Address, InetSocketAddress, SocketAddress, URI, URISyntaxException}
 import scala.collection.mutable
@@ -23,7 +23,7 @@ class ApplyHostForwardedHeader() extends SimpleFilter[Request, Response] {
     svc(req)
   }
 
-  private def getForwardedHost(headerMap: Map[String, String]): Option[String] = {
+  private def getForwardedHost(headerMap: HeaderMap): Option[String] = {
     headerMap.get(forwardedHeader)
       .flatMap { f =>
         f.split(";").toStream
@@ -34,7 +34,7 @@ class ApplyHostForwardedHeader() extends SimpleFilter[Request, Response] {
   }
 
   private def replaceHostWithForwardedHostIfExists(req: Request): Any = {
-    val forwardedHostOp = getForwardedHost(req.headerMap.toMap)
+    val forwardedHostOp = getForwardedHost(req.headerMap)
     forwardedHostOp.foreach(newHost => log.info("Replace Host: %s with %s", req.host, newHost))
     forwardedHostOp.foreach(forwardedHost => req.headerMap.set(Fields.Host, forwardedHost))
   }
