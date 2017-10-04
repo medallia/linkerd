@@ -19,6 +19,7 @@ class ApplyHostForwardedHeader() extends SimpleFilter[Request, Response] {
   def apply(req: Request, svc: Service[Request, Response]): Future[Response] = {
     log.info(s"ApplyHostForwardedHeader for %s", req)
 
+    log.info(s"Host is for %s", req.host)
     replaceHostWithForwardedHostIfExists(req)
     log.info(s"Host is for %s", req.host)
 
