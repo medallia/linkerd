@@ -10,7 +10,7 @@ import com.twitter.logging.Logger
 
 /**
  * Applies the Host value in the [Forwarded](https://tools.ietf.org/html/rfc7239) header to the Request's Host header.
- *
+ * So the Request is sent with the actual host value.
  */
 class ApplyHostForwardedHeader() extends SimpleFilter[Request, Response] {
   private val log = Logger(getClass)
