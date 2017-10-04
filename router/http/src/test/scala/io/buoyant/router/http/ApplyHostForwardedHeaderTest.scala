@@ -35,7 +35,7 @@ class ApplyHostForwardedHeaderTest extends FunSuite {
     assert(rsp.contentString == "buoyant.pizza")
   }
 
-  test("If Forwarded is present but withoud host element, request's host should not change") {
+  test("If Forwarded is present but without host element, request's host should not change") {
     val req = mkReq()
     req.host = "buoyant.pizza"
     req.headerMap.add("Forwarded", "nothost=8.8.4.4;key=value")
