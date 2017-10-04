@@ -17,11 +17,8 @@ class ApplyHostForwardedHeader() extends SimpleFilter[Request, Response] {
 
   val forwardedHeader = "Forwarded"
   def apply(req: Request, svc: Service[Request, Response]): Future[Response] = {
-    log.info(s"ApplyHostForwardedHeader for %s", req)
 
-    log.info(s"Host is for %s", req.host)
     replaceHostWithForwardedHostIfExists(req)
-    log.info(s"Host is for %s", req.host)
 
     svc(req)
   }
@@ -31,13 +28,14 @@ class ApplyHostForwardedHeader() extends SimpleFilter[Request, Response] {
       .flatMap { f =>
         f.split(";").toStream
           .map(_.trim)
-          .find(x => x.startsWith("host="))
+          .find(x => x.toLowerCase().startsWith("host="))
       }
-      .map(fHost => fHost.replace("host=", ""))
+      .map(fHost => fHost.toLowerCase().replace("host=", ""))
   }
 
   private def replaceHostWithForwardedHostIfExists(req: Request): Any = {
     val forwardedHostOp = getForwardedHost(req.headerMap.toMap)
+    forwardedHostOp.foreach(newHost => log.info("Replace Host: %s with %s", req.host, newHost))
     forwardedHostOp.foreach(forwardedHost => req.headerMap.set(Fields.Host, forwardedHost))
   }
 }
@@ -49,7 +47,6 @@ object ApplyHostForwardedHeader {
   ) extends ServiceFactoryProxy(underlying) {
 
     override def apply(conn: ClientConnection): Future[Service[Request, Response]] = {
-      print("AAAAAAAAAAA")
       val filter = new ApplyHostForwardedHeader()
       self.apply(conn).map(filter.andThen(_))
     }
