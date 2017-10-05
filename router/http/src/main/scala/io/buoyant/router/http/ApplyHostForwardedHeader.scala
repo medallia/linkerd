@@ -19,6 +19,7 @@ object ApplyHostForwardedHeader {
     private val log = Logger(getClass)
 
     val ForwardedHeader = "Forwarded"
+    val HostElementPrefix = "host="
     def apply(req: Request, svc: Service[Request, Response]): Future[Response] = {
 
       replaceHostWithForwardedHostIfExists(req)
@@ -31,9 +32,9 @@ object ApplyHostForwardedHeader {
         .flatMap { f =>
           f.split(";|,").toStream
             .map(_.trim)
-            .find(x => StringUtils.startsWithIgnoreCase(x, "host="))
+            .find(x => StringUtils.startsWithIgnoreCase(x, HostElementPrefix))
         }
-        .map(fHost => fHost.toLowerCase().replace("host=", "").replaceAll("\"|'", ""))
+        .map(fHost => fHost.toLowerCase().replace(HostElementPrefix, "").replaceAll("\"|'", ""))
     }
 
     private def replaceHostWithForwardedHostIfExists(req: Request): Any = {
