@@ -8,6 +8,7 @@ import scala.collection.mutable
 import scala.util.Random
 import com.twitter.logging.Logger
 import org.apache.commons.lang.StringUtils
+import com.google.common.base.CharMatcher
 
 /**
  * Applies the Host value in the [Forwarded](https://tools.ietf.org/html/rfc7239) header to the Request's Host header.
@@ -34,7 +35,7 @@ object ApplyHostForwardedHeader {
             .map(_.trim)
             .find(x => StringUtils.startsWithIgnoreCase(x, HostElementPrefix))
         }
-        .map(fHost => fHost.toLowerCase().replace(HostElementPrefix, "").replaceAll("\"|'", ""))
+        .map(fHost => CharMatcher.anyOf("'\"").trimFrom(fHost.toLowerCase().replace(HostElementPrefix, "")))
     }
 
     private def replaceHostWithForwardedHostIfExists(req: Request): Any = {
