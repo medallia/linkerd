@@ -12,45 +12,35 @@ import com.twitter.logging.Logger
  * Applies the Host value in the [Forwarded](https://tools.ietf.org/html/rfc7239) header to the Request's Host header.
  * So the Request is sent with the actual host value.
  */
-class ApplyHostForwardedHeader() extends SimpleFilter[Request, Response] {
-  private val log = Logger(getClass)
-
-  val forwardedHeader = "Forwarded"
-  def apply(req: Request, svc: Service[Request, Response]): Future[Response] = {
-
-    replaceHostWithForwardedHostIfExists(req)
-
-    svc(req)
-  }
-
-  private def getForwardedHost(headerMap: HeaderMap): Option[String] = {
-    headerMap.get(forwardedHeader)
-      .flatMap { f =>
-        f.split(";").toStream
-          .map(_.trim)
-          .find(x => x.toLowerCase().startsWith("host="))
-      }
-      .map(fHost => fHost.toLowerCase().replace("host=", ""))
-  }
-
-  private def replaceHostWithForwardedHostIfExists(req: Request): Any = {
-    val forwardedHostOp = getForwardedHost(req.headerMap)
-    forwardedHostOp.foreach(forwardedHost => {
-      log.info("Replace Host: %s with %s", req.host, forwardedHost)
-      req.headerMap.set(Fields.Host, forwardedHost)
-    })
-  }
-}
-
 object ApplyHostForwardedHeader {
 
-  class HostHeaderReplacementProxy(
-    underlying: ServiceFactory[Request, Response]
-  ) extends ServiceFactoryProxy(underlying) {
+  object filter extends SimpleFilter[Request, Response] {
+    private val log = Logger(getClass)
 
-    override def apply(conn: ClientConnection): Future[Service[Request, Response]] = {
-      val filter = new ApplyHostForwardedHeader()
-      self.apply(conn).map(filter.andThen(_))
+    val ForwardedHeader = "Forwarded"
+    def apply(req: Request, svc: Service[Request, Response]): Future[Response] = {
+
+      replaceHostWithForwardedHostIfExists(req)
+
+      svc(req)
+    }
+
+    private def getForwardedHost(headerMap: HeaderMap): Option[String] = {
+      headerMap.get(ForwardedHeader)
+        .flatMap { f =>
+          f.split(";").toStream
+            .map(_.trim)
+            .find(x => x.toLowerCase().startsWith("host="))
+        }
+        .map(fHost => fHost.toLowerCase().replace("host=", ""))
+    }
+
+    private def replaceHostWithForwardedHostIfExists(req: Request): Any = {
+      val forwardedHostOp = getForwardedHost(req.headerMap)
+      forwardedHostOp.foreach(forwardedHost => {
+        log.info("Replace Host: %s with %s", req.host, forwardedHost)
+        req.headerMap.set(Fields.Host, forwardedHost)
+      })
     }
   }
   val module: Stackable[ServiceFactory[Request, Response]] =
@@ -59,7 +49,7 @@ object ApplyHostForwardedHeader {
       val description = "Applies the Host value in the [Forwarded](https://tools.ietf.org/html/rfc7239) header to the Request's Host header"
       def make(
         next: ServiceFactory[Request, Response]
-      ) = new HostHeaderReplacementProxy(next)
+      ) = filter andThen next
     }
 }
 

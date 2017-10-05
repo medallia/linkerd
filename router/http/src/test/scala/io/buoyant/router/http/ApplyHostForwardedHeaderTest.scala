@@ -19,7 +19,7 @@ class ApplyHostForwardedHeaderTest extends FunSuite {
 
   def mkReq() = Request()
   def service(req: Request = mkReq()) = {
-    val svc = new ApplyHostForwardedHeader().andThen(OkSvc)
+    val svc = ApplyHostForwardedHeader.filter.andThen(OkSvc)
     svc(req)
   }
 
