@@ -7,6 +7,7 @@ import java.net.{Inet4Address, Inet6Address, InetSocketAddress, SocketAddress, U
 import scala.collection.mutable
 import scala.util.Random
 import com.twitter.logging.Logger
+import org.apache.commons.lang.StringUtils
 
 /**
  * Applies the Host value in the [Forwarded](https://tools.ietf.org/html/rfc7239) header to the Request's Host header.
@@ -30,7 +31,7 @@ object ApplyHostForwardedHeader {
         .flatMap { f =>
           f.split(";|,").toStream
             .map(_.trim)
-            .find(x => x.toLowerCase().startsWith("host="))
+            .find(x => StringUtils.startsWithIgnoreCase(x, "host="))
         }
         .map(fHost => fHost.toLowerCase().replace("host=", "").replaceAll("\"|'", ""))
     }
