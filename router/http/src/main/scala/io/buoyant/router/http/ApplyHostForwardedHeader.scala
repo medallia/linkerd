@@ -28,11 +28,11 @@ object ApplyHostForwardedHeader {
     private def getForwardedHost(headerMap: HeaderMap): Option[String] = {
       headerMap.get(ForwardedHeader)
         .flatMap { f =>
-          f.split(";").toStream
+          f.split(";|,").toStream
             .map(_.trim)
             .find(x => x.toLowerCase().startsWith("host="))
         }
-        .map(fHost => fHost.toLowerCase().replace("host=", ""))
+        .map(fHost => fHost.toLowerCase().replace("host=", "").replaceAll("\"|'", ""))
     }
 
     private def replaceHostWithForwardedHostIfExists(req: Request): Any = {
