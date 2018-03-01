@@ -18,10 +18,11 @@ object EnvTenantHostIdentifierConfig {
 }
 
 class EnvTenantHostIdentifierConfig extends HttpIdentifierConfig {
+  val defaultTenant: Option[String] = None
 
   @JsonIgnore
   override def newIdentifier(
     prefix: Path,
     baseDtab: () => Dtab = () => Dtab.base
-  ) = EnvTenantHostIdentifier.mk(prefix, baseDtab)
+  ) = EnvTenantHostIdentifier.mk(prefix, baseDtab, defaultTenant)
 }
