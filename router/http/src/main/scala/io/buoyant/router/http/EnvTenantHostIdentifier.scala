@@ -10,8 +10,9 @@ object EnvTenantHostIdentifier {
 
   def mk(
     prefix: Path,
-    baseDtab: () => Dtab = () => Dtab.base
-  ): Identifier[Request] = EnvTenantHostIdentifier(prefix, baseDtab)
+    baseDtab: () => Dtab = () => Dtab.base,
+    defaultTenant: Option[String]
+  ): Identifier[Request] = EnvTenantHostIdentifier(prefix, baseDtab, defaultTenant)
 
 }
 
@@ -19,13 +20,16 @@ object EnvTenantHostIdentifier {
  * Identifier that creates a path based on these headers values (in order)
  * <ol>
  *   <li> X-Medallia-Rpc-Environment: Optional. "_" represents a cross environment request. Currently only used for QA Clusters.
- *   <li> X-Medallia-Rpc-Tenant: Required. Tenant for the request
+ *   <li> X-Medallia-Rpc-Tenant: Required. Tenant for the request.
+  *   There's the ability to set a default value in the linkerd configuration (which is used if the header is not sent). That's currently only used
+  *   by clients that don't want to inject the header in their clients (e.g. chatgrid)
  *   <li> Host: Required. Service name
  * </ol>
  */
 case class EnvTenantHostIdentifier(
   prefix: Path,
-  baseDtab: () => Dtab = () => Dtab.base
+  baseDtab: () => Dtab = () => Dtab.base,
+  defaultTenant: Option[String]
 ) extends Identifier[Request] {
 
   val HostHeader = "Host"
@@ -38,7 +42,7 @@ case class EnvTenantHostIdentifier(
     Dst.Path(prefix ++ path, baseDtab(), Dtab.local)
 
   def apply(req: Request): Future[RequestIdentification[Request]] = {
-    val tenant = getHeader(req, TenantHeader)
+    val tenant = getHeader(req, TenantHeader).orElse(defaultTenant)
     val environment = getHeader(req, EnvironmentHeader)
     val host = getHeader(req, HostHeader)
 
