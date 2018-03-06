@@ -38,6 +38,8 @@ case class EnvTenantHostIdentifier(
 
   val EnvironmentHeader = "X-Medallia-Rpc-Environment"
 
+  val ProtocolHeader = "X-Medallia-Rpc-Protocol"
+
   private[this] def mkPath(path: Path): Dst.Path =
     Dst.Path(prefix ++ path, baseDtab(), Dtab.local)
 
@@ -45,13 +47,14 @@ case class EnvTenantHostIdentifier(
     val tenant = getHeader(req, TenantHeader).orElse(defaultTenant)
     val environment = getHeader(req, EnvironmentHeader)
     val host = getHeader(req, HostHeader)
+    val protocol = getHeader(req, ProtocolHeader)
 
     if (tenant.isEmpty) {
       Future.value(new UnidentifiedRequest(s"$TenantHeader header is absent"))
     } else if (host.isEmpty) {
       Future.value(new UnidentifiedRequest(s"$HostHeader header is absent"))
     } else {
-      val dst = mkPath(Path.Utf8(environment.getOrElse("_"), tenant.get, host.get))
+      val dst = mkPath(Path.Utf8(environment.getOrElse("_"), tenant.get, host.get, protocol.getOrElse("http")))
       Future.value(new IdentifiedRequest(dst, req))
     }
   }
