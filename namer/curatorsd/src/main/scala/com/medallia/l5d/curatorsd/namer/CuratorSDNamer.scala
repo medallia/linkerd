@@ -29,12 +29,11 @@ class CuratorSDNamer(zkConnectStr: String, backwardsCompatibility: Option[String
 
   private def getAddress(instances: Iterable[ServiceInstance[ServiceInstanceInfo]], protocol: String): Addr = {
     val addrs = instances
-                  .map(instance => new URL(instance.getUriSpec.build()))
-                  .filter(url => url.getProtocol() == protocol)
-                  .map(url => Address(url.getHost, url.getPort))
-                  .filter()
-                  .toStream
-                  .distinct
+      .map(instance => new URL(instance.getUriSpec.build()))
+      .filter(url => url.getProtocol == protocol)
+      .map(url => Address(url.getHost, url.getPort))
+      .toStream
+      .distinct
     log.info("Binding to addresses %s protocol %s", addrs, protocol)
     val metadata = Addr.Metadata(("ssl", protocol == "https"))
     Addr.Bound(addrs.toSet, metadata)
@@ -49,14 +48,14 @@ class CuratorSDNamer(zkConnectStr: String, backwardsCompatibility: Option[String
 
         log.info(s"Looking up %s, protocol: %s", serviceId, protocol)
 
-        val addrInit = getAddress(serviceDiscoveryInfo.serviceDiscovery.lookupAll(serviceId).asScala)
+        val addrInit = getAddress(serviceDiscoveryInfo.serviceDiscovery.lookupAll(serviceId).asScala, protocol)
         val addrVar = Var.async(addrInit) { update =>
 
           val listener = new ServiceDiscoveryListener {
 
             override def serviceInstancesChanged(): Unit = {
               log.info("Cache changed for %s", serviceName)
-              update() = getAddress(serviceDiscoveryInfo.serviceDiscovery.lookupAll(serviceId).asScala)
+              update() = getAddress(serviceDiscoveryInfo.serviceDiscovery.lookupAll(serviceId).asScala, protocol)
             }
 
           }

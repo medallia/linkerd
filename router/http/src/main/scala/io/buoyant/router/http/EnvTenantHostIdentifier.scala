@@ -21,8 +21,8 @@ object EnvTenantHostIdentifier {
  * <ol>
  *   <li> X-Medallia-Rpc-Environment: Optional. "_" represents a cross environment request. Currently only used for QA Clusters.
  *   <li> X-Medallia-Rpc-Tenant: Required. Tenant for the request.
-  *   There's the ability to set a default value in the linkerd configuration (which is used if the header is not sent). That's currently only used
-  *   by clients that don't want to inject the header in their clients (e.g. chatgrid)
+ *   There's the ability to set a default value in the linkerd configuration (which is used if the header is not sent). That's currently only used
+ *   by clients that don't want to inject the header in their clients (e.g. chatgrid)
  *   <li> Host: Required. Service name
  * </ol>
  */
