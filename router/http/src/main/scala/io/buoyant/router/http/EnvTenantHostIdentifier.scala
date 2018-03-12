@@ -24,6 +24,7 @@ object EnvTenantHostIdentifier {
  *   There's the ability to set a default value in the linkerd configuration (which is used if the header is not sent). That's currently only used
  *   by clients that don't want to inject the header in their clients (e.g. chatgrid)
  *   <li> Host: Required. Service name
+ *   <li> X-Medallia-Rpc-Protocol: Optional (http is default). Which service endpoints should be picked for a given request.
  * </ol>
  */
 case class EnvTenantHostIdentifier(
