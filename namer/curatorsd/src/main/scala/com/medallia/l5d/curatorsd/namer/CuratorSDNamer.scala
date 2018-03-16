@@ -15,7 +15,7 @@ import scala.collection.JavaConverters._
  * The curator namer takes Paths of the form
  *
  * {{{
- * /#/com.medallia.curatorsd/environment/tenant/service
+ * /#/com.medallia.curatorsd/environment/tenant/service/protocol
  * }}}
  *
  * and returns a dynamic representation of the resolution of the path into a
@@ -27,40 +27,35 @@ class CuratorSDNamer(zkConnectStr: String, backwardsCompatibility: Option[String
 
   private val serviceDiscoveryInfo = CuratorSDCommon.createServiceDiscovery(zkConnectStr, backwardsCompatibility)
 
-  private def instanceToAddress(instance: ServiceInstance[ServiceInstanceInfo]): Address = {
-    val address = instance.getAddress
-    val port = instance.getPort
-    if (address != null && port != null) {
-      Address(address, port)
-    } else {
-      val url = new URL(instance.getUriSpec.build())
-      Address(url.getHost, url.getPort) // TODO (future) support https and path
-    }
-  }
-
-  private def getAddress(instances: Iterable[ServiceInstance[ServiceInstanceInfo]]): Addr = {
-    val addrs = instances.map(instanceToAddress).toStream.distinct
-    log.info("Binding to addresses %s", addrs)
-    Addr.Bound(addrs.toSet, Addr.Metadata.empty)
+  private def getAddress(instances: Iterable[ServiceInstance[ServiceInstanceInfo]], protocol: String): Addr = {
+    val addrs = instances
+      .map(instance => new URL(instance.getUriSpec.build()))
+      .filter(url => url.getProtocol == protocol)
+      .map(url => Address(url.getHost, url.getPort))
+      .toStream
+      .distinct
+    log.info("Binding to addresses %s protocol %s", addrs, protocol)
+    val metadata = Addr.Metadata(("ssl", protocol == "https"))
+    Addr.Bound(addrs.toSet, metadata)
   }
 
   override def lookup(path: Path): Activity[NameTree[Name]] = {
     log.info("Binding for path %s", path)
 
     path match {
-      case Path.Utf8(environment, tenant, serviceName) =>
+      case Path.Utf8(environment, tenant, serviceName, protocol) =>
         val serviceId = new ServiceId(serviceName, tenant, CuratorSDCommon.fromOptionalPathField(environment).orNull)
 
-        log.info(s"Looking up %s", serviceId)
+        log.info(s"Looking up %s, protocol: %s", serviceId, protocol)
 
-        val addrInit = getAddress(serviceDiscoveryInfo.serviceDiscovery.lookupAll(serviceId).asScala)
+        val addrInit = getAddress(serviceDiscoveryInfo.serviceDiscovery.lookupAll(serviceId).asScala, protocol)
         val addrVar = Var.async(addrInit) { update =>
 
           val listener = new ServiceDiscoveryListener {
 
             override def serviceInstancesChanged(): Unit = {
               log.info("Cache changed for %s", serviceName)
-              update() = getAddress(serviceDiscoveryInfo.serviceDiscovery.lookupAll(serviceId).asScala)
+              update() = getAddress(serviceDiscoveryInfo.serviceDiscovery.lookupAll(serviceId).asScala, protocol)
             }
 
           }
@@ -74,7 +69,7 @@ class CuratorSDNamer(zkConnectStr: String, backwardsCompatibility: Option[String
         }
         Activity.value(NameTree.Leaf(Name.Bound(addrVar, path, path)))
       case _ =>
-        Activity.exception(new IllegalArgumentException(s"Expected curator namer format: /environment/tenant/serviceName, got $path"))
+        Activity.exception(new IllegalArgumentException(s"Expected curator namer format: /environment/tenant/serviceName/protocol, got $path"))
     }
   }
 

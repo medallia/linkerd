@@ -21,9 +21,10 @@ object EnvTenantHostIdentifier {
  * <ol>
  *   <li> X-Medallia-Rpc-Environment: Optional. "_" represents a cross environment request. Currently only used for QA Clusters.
  *   <li> X-Medallia-Rpc-Tenant: Required. Tenant for the request.
-  *   There's the ability to set a default value in the linkerd configuration (which is used if the header is not sent). That's currently only used
-  *   by clients that don't want to inject the header in their clients (e.g. chatgrid)
+ *   There's the ability to set a default value in the linkerd configuration (which is used if the header is not sent). That's currently only used
+ *   by clients that don't want to inject the header in their clients (e.g. chatgrid)
  *   <li> Host: Required. Service name
+ *   <li> X-Medallia-Rpc-Protocol: Optional (http is default). Which service endpoints should be picked for a given request.
  * </ol>
  */
 case class EnvTenantHostIdentifier(
@@ -38,6 +39,8 @@ case class EnvTenantHostIdentifier(
 
   val EnvironmentHeader = "X-Medallia-Rpc-Environment"
 
+  val ProtocolHeader = "X-Medallia-Rpc-Protocol"
+
   private[this] def mkPath(path: Path): Dst.Path =
     Dst.Path(prefix ++ path, baseDtab(), Dtab.local)
 
@@ -45,13 +48,14 @@ case class EnvTenantHostIdentifier(
     val tenant = getHeader(req, TenantHeader).orElse(defaultTenant)
     val environment = getHeader(req, EnvironmentHeader)
     val host = getHeader(req, HostHeader)
+    val protocol = getHeader(req, ProtocolHeader)
 
     if (tenant.isEmpty) {
       Future.value(new UnidentifiedRequest(s"$TenantHeader header is absent"))
     } else if (host.isEmpty) {
       Future.value(new UnidentifiedRequest(s"$HostHeader header is absent"))
     } else {
-      val dst = mkPath(Path.Utf8(environment.getOrElse("_"), tenant.get, host.get))
+      val dst = mkPath(Path.Utf8(environment.getOrElse("_"), tenant.get, host.get, protocol.getOrElse("http")))
       Future.value(new IdentifiedRequest(dst, req))
     }
   }
