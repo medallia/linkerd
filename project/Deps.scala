@@ -2,10 +2,6 @@ import sbt._
 
 object Deps {
 
-  val curatorFramework = "org.apache.curator" % "curator-framework" % "2.9.1"
-  val curatorClient = "org.apache.curator" % "curator-client" % "2.9.1"
-  val curatorDiscovery = "org.apache.curator" % "curator-x-discovery" % "2.9.1"
-
   // process lifecycle
   val twitterServer =
     ("com.twitter" %% "twitter-server" % "1.32.0")
@@ -21,7 +17,9 @@ object Deps {
   def netty4(mod: String) =
     "io.netty" % s"netty-$mod" % "4.1.14.Final"
 
-  val boringssl = "io.netty" % "netty-tcnative-boringssl-static" % "2.0.5.Final"
+  // Original tcnative version: "io.netty" % "netty-tcnative-boringssl-static" % "2.0.5.Final"
+  // Since we need FIPS compliance, we're using the dynamic binding version (for centos)
+  val boringssl = "io.netty" % "netty-tcnative" % "2.0.5.Final" classifier "linux-x86_64-fedora" //classifier "osx-x86_64"
 
   def zkCandidate =
     ("com.twitter.common.zookeeper" % "candidate" % "0.0.84")
@@ -71,4 +69,17 @@ object Deps {
 
   // dnsjava
   val dnsJava = "dnsjava" % "dnsjava" % "2.1.8"
+
+  // curator service discovery
+  val curatorSD = "org.apache.curator" % "curator-x-discovery" % "4.0.0" exclude("org.apache.zookeeper", "zookeeper")
+
+  val zookeeper = "org.apache.zookeeper" % "zookeeper" % "3.4.11"
+
+  // Medallia service discovery, not transitive for now because it depends on kafka which has an incompatible scala version
+  // Dependencies are obtained from curatorSD at the moment
+  // We should decouple service discovery in rpc-library from everything else
+  val rpcLibrary = "com.medallia" % "rpc-library" % "2.1.3" intransitive()
+
+  // kafka
+  val kafka = "org.apache.kafka" % "kafka_2.12" % "0.10.1.1"
 }

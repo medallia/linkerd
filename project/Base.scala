@@ -32,7 +32,7 @@ object Base {
 class Base extends Build {
   import Base._
 
-  val headVersion = "1.3.6"
+  val headVersion = "1.3.6-medallia-1.9.0"
   val openJdkVersion = "8u151"
 
   object Git {
@@ -73,7 +73,10 @@ class Base extends Build {
     resolvers ++= Seq(
       "twitter-repo" at "https://maven.twttr.com",
       Resolver.mavenLocal,
-      "typesafe" at "https://repo.typesafe.com/typesafe/releases"
+      "Local Maven Repository" at Path.userHome.asFile.toURI.toURL + ".m2/repository", // mavenLocal doesn't seem to be enough
+      Resolver.jcenterRepo,
+      "typesafe" at "https://repo.typesafe.com/typesafe/releases",
+      "Artifactory Realm" at "https://martifactory.io/mvn-virtual"
     ),
     aggregate in assembly := false,
     (developTwitterDeps in Global) := { sys.env.get("TWITTER_DEVELOP") == Some("1") },
