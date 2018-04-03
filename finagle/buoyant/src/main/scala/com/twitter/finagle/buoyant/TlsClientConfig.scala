@@ -3,7 +3,7 @@ package com.twitter.finagle.buoyant
 import com.twitter.finagle.Stack
 import com.twitter.finagle.netty4.ssl.client.Netty4ClientEngineFactory
 import com.twitter.finagle.ssl.{KeyCredentials, TrustCredentials}
-import com.twitter.finagle.ssl.client.{SslClientConfiguration, SslClientEngineFactory}
+import com.twitter.finagle.ssl.client.{SslClientConfiguration, SslClientEngineFactory, SslClientSessionVerifier}
 import com.twitter.finagle.transport.Transport
 import com.twitter.io.StreamIO
 import java.io._
@@ -58,7 +58,8 @@ case class TlsClientConfig(
         keyCredentials = keyCredentials(clientAuth)
       )
       Stack.Params.empty + Transport.ClientSsl(Some(tlsConfig)) +
-        SslClientEngineFactory.Param(Netty4ClientEngineFactory())
+        SslClientEngineFactory.Param(Netty4ClientEngineFactory()) +
+        SslClientSessionVerifier.Param(IpSslClientSessionVerifier)
 
     case TlsClientConfig(Some(false) | None, None, _, _) =>
       val msg = "tls is configured with validation but `commonName` is not set"

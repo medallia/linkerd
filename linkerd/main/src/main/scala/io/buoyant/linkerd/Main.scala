@@ -45,6 +45,7 @@ object Main extends App {
         closeOnExit(Closable.sequence(
           Closable.all(routers: _*),
           Closable.all(telemeters: _*),
+          Closable.all(closableNamers: _*),
           Closable.all(admin: _*)
         ))
         Await.all(routers: _*)
