@@ -10,7 +10,10 @@ import javax.net.ssl.SSLSession
 import sun.security.util.HostnameChecker
 import sun.security.x509.X500Name
 
-/** Custom SSLClientSessionVerifier that also verifies the resolved ip against the CN in the certificate */
+/**
+  * Custom SSLClientSessionVerifier that also verifies the resolved ip (instead of the service name)
+  *  against the CN or SANs in the certificate
+  */
 object IpSslClientSessionVerifier extends SslClientSessionVerifier {
 
   private[this] val checker = HostnameChecker.getInstance(HostnameChecker.TYPE_TLS)
@@ -57,9 +60,10 @@ object IpSslClientSessionVerifier extends SslClientSessionVerifier {
           val x500Name = HostnameChecker.getSubjectX500Name(x509)
           val commonName = x500Name.findMostSpecificAttribute(X500Name.commonName_oid)
 
-          commonName != null &&
-            (ip == commonName.getAsString ||
-              toIpAddress(commonName.getAsString).exists(_.equals(inetSocketAddress.getAddress)))
+          Try(checker.`match`(ip, x509)).isReturn || // check Ip in SANs
+            (commonName != null &&
+              (ip == commonName.getAsString ||
+                toIpAddress(commonName.getAsString).exists(_.equals(inetSocketAddress.getAddress))))
         } else {
           false
         }
