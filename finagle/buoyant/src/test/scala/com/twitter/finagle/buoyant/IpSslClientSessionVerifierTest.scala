@@ -45,6 +45,38 @@ class IpSslClientSessionVerifierTest extends FunSuite {
     assertThrows[SslHostVerificationException](IpSslClientSessionVerifier.apply(address, sslClientConfig, sslSession))
   }
 
+  test("ip in SAN happy path") {
+    val address = Address.Inet(new InetSocketAddress("1.2.3.4", 1000), Map())
+    val sslClientConfig = SslClientConfiguration(hostname = Some("www.company.net"))
+    val sslSession = sslSessionForCert(readCert("testCertWithIPinSAN.pem"))
+
+    assert(IpSslClientSessionVerifier.apply(address, sslClientConfig, sslSession))
+  }
+
+  test("ip in SAN happy path second ip") {
+    val address = Address.Inet(new InetSocketAddress("5.6.7.8", 1000), Map())
+    val sslClientConfig = SslClientConfiguration(hostname = Some("www.company.net"))
+    val sslSession = sslSessionForCert(readCert("testCertWithIPinSAN.pem"))
+
+    assert(IpSslClientSessionVerifier.apply(address, sslClientConfig, sslSession))
+  }
+
+  test("ip in SAN happy path hostname matches") {
+    val address = Address.Inet(new InetSocketAddress("1.2.3.5", 1000), Map())
+    val sslClientConfig = SslClientConfiguration(hostname = Some("dev.mycompany.com"))
+    val sslSession = sslSessionForCert(readCert("testCertWithIPinSAN.pem"))
+
+    assert(IpSslClientSessionVerifier.apply(address, sslClientConfig, sslSession))
+  }
+
+  test("wrong ip in SAN") {
+    val address = Address.Inet(new InetSocketAddress("1.2.3.5", 1000), Map())
+    val sslClientConfig = SslClientConfiguration(hostname = Some("hostDoesntMatter"))
+    val sslSession = sslSessionForCert(readCert("testCertWithIPinSAN.pem"))
+
+    assertThrows[SslHostVerificationException](IpSslClientSessionVerifier.apply(address, sslClientConfig, sslSession))
+  }
+
   private def readCert(resourceName: String): Certificate = {
     CertificateFactory
       .getInstance("X.509")
