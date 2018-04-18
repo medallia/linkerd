@@ -77,6 +77,14 @@ class IpSslClientSessionVerifierTest extends FunSuite {
     assertThrows[SslHostVerificationException](IpSslClientSessionVerifier.apply(address, sslClientConfig, sslSession))
   }
 
+  test("ip in SAN but not IP type") {
+    val address = Address.Inet(new InetSocketAddress("1.2.3.4", 1000), Map())
+    val sslClientConfig = SslClientConfiguration(hostname = Some("hostDoesntMatter"))
+    val sslSession = sslSessionForCert(readCert("testCertWithIPinSAN2.pem"))
+
+    assertThrows[SslHostVerificationException](IpSslClientSessionVerifier.apply(address, sslClientConfig, sslSession))
+  }
+
   private def readCert(resourceName: String): Certificate = {
     CertificateFactory
       .getInstance("X.509")
