@@ -37,4 +37,6 @@ class TestAnnouncer extends Announcer {
       }
     }
   }
+
+  override def close(deadline: Time): Future[Unit] = Future.Unit
 }

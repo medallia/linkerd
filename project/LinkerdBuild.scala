@@ -83,7 +83,7 @@ object LinkerdBuild extends Base {
 
     val curator = projectDir("namer/curator")
       .dependsOn(core)
-      .withLibs(Deps.curatorFramework, Deps.curatorClient, Deps.curatorDiscovery)
+      .withLibs(Deps.curatorSD, Deps.zookeeper, Deps.rpcLibrary)
       .withTests()
 
     val dnssrv = projectDir("namer/dnssrv")
@@ -113,6 +113,11 @@ object LinkerdBuild extends Base {
       .withTests()
       .dependsOn(core % "compile->compile;test->test")
 
+    val curatorSD = projectDir("namer/curatorsd")
+      .withLibs(Deps.curatorSD, Deps.zookeeper, Deps.rpcLibrary)
+      .withTests()
+      .dependsOn(core % "compile->compile;test->test")
+
     val zkLeader = projectDir("namer/zk-leader")
       .dependsOn(core)
       .withLib(Deps.zkCandidate)
@@ -123,7 +128,7 @@ object LinkerdBuild extends Base {
       .withTwitterLib(Deps.finagle("http"))
       .withTests()
 
-    val all = aggregateDir("namer", core, consul, curator, dnssrv, fs, k8s, istio, marathon, serversets, zkLeader, rancher)
+    val all = aggregateDir("namer", core, consul, curator, dnssrv, fs, k8s, istio, marathon, serversets, zkLeader, rancher, curatorSD)
 
   }
 
@@ -193,6 +198,8 @@ object LinkerdBuild extends Base {
       .dependsOn(configCore)
       .withTwitterLib(Deps.finagle("core"))
       .withTwitterLib(Deps.finagle("stats"))
+      .withTwitterLib(Deps.finagle("zipkin-core"))
+      .withTwitterLib(Deps.finagle("zipkin"))
       .withTests()
 
     val adminMetricsExport = projectDir("telemetry/admin-metrics-export")
@@ -228,7 +235,13 @@ object LinkerdBuild extends Base {
       .dependsOn(core, Router.core)
       .withTests()
 
-    val all = aggregateDir("telemetry", adminMetricsExport, core, influxdb, prometheus, recentRequests, statsd, tracelog, zipkin)
+    val tracekafka = projectDir("telemetry/trace-kafka")
+      .dependsOn(core)
+      .withTwitterLib(Deps.finagle("zipkin-core"))
+      .withTwitterLib(Deps.finagle("zipkin"))
+      .withLib(Deps.kafka)
+
+    val all = aggregateDir("telemetry", adminMetricsExport, core, influxdb, prometheus, recentRequests, statsd, tracelog, tracekafka, zipkin)
   }
 
   val ConfigFileRE = """^(.*)\.yaml$""".r
@@ -414,7 +427,7 @@ object LinkerdBuild extends Base {
     val BundleProjects = Seq[ProjectReference](
       core, main, Namer.fs, Storage.inMemory, Router.http,
       Iface.controlHttp, Iface.interpreterThrift, Iface.mesh, Iface.destination,
-      Namer.consul, Namer.k8s, Namer.marathon, Namer.serversets, Namer.zkLeader, Namer.dnssrv, Namer.rancher,
+      Namer.consul, Namer.k8s, Namer.marathon, Namer.serversets, Namer.curatorSD, Namer.zkLeader, Namer.dnssrv, Namer.rancher,
       Iface.mesh,
       Interpreter.perHost, Interpreter.k8s,
       Storage.etcd, Storage.inMemory, Storage.k8s, Storage.zk, Storage.consul,
@@ -661,7 +674,12 @@ object LinkerdBuild extends Base {
         .withTwitterLib(Deps.finagle("serversets").exclude("org.slf4j", "slf4j-jdk14"))
         .dependsOn(core)
 
-      val all = aggregateDir("linkerd/announcer", serversets)
+      val curatorSD = projectDir("linkerd/announcer/curatorsd")
+        .withLibs(Deps.curatorSD, Deps.zookeeper)
+        .dependsOn(core)
+        .dependsOn(Namer.curatorSD)
+
+      val all = aggregateDir("linkerd/announcer", serversets, curatorSD)
     }
 
     val admin = projectDir("linkerd/admin")
@@ -672,7 +690,7 @@ object LinkerdBuild extends Base {
       .dependsOn(Protocol.thrift % "test", Interpreter.perHost % "test")
 
     val main = projectDir("linkerd/main")
-      .dependsOn(admin, configCore, core, Protocol.http % "e2e", Interpreter.namerd % "e2e", Interpreter.perHost % "e2e")
+      .dependsOn(admin, configCore, core, Protocol.http % "e2e", Interpreter.namerd % "e2e", Interpreter.perHost % "e2e", Telemetry.tracekafka)
       .withTwitterLib(Deps.twitterServer)
       .withLibs(Deps.jacksonCore, Deps.jacksonDatabind, Deps.jacksonYaml)
       .withBuildProperties("io/buoyant/linkerd")
@@ -753,11 +771,11 @@ object LinkerdBuild extends Base {
 
     val BundleProjects = Seq[ProjectReference](
       admin, core, main, configCore,
-      Namer.consul, Namer.fs, Namer.k8s, Namer.istio, Namer.marathon, Namer.serversets, Namer.zkLeader, Namer.curator, Namer.dnssrv, Namer.rancher,
+      Namer.consul, Namer.fs, Namer.k8s, Namer.istio, Namer.marathon, Namer.serversets, Namer.zkLeader, Namer.curator, Namer.curatorSD, Namer.dnssrv, Namer.rancher,
       Interpreter.fs, Interpreter.k8s, Interpreter.istio, Interpreter.mesh, Interpreter.namerd, Interpreter.perHost, Interpreter.subnet, Interpreter.consul,
       Protocol.h2, Protocol.http, Protocol.mux, Protocol.thrift, Protocol.thriftMux,
-      Announcer.serversets,
-      Telemetry.adminMetricsExport, Telemetry.core, Telemetry.influxdb, Telemetry.prometheus, Telemetry.recentRequests, Telemetry.statsd, Telemetry.tracelog, Telemetry.zipkin,
+      Announcer.serversets, Announcer.curatorSD,
+      Telemetry.adminMetricsExport, Telemetry.core, Telemetry.influxdb, Telemetry.prometheus, Telemetry.recentRequests, Telemetry.statsd, Telemetry.tracelog, Telemetry.tracekafka, Telemetry.zipkin,
       tls,
       failureAccrual
     )
@@ -856,6 +874,7 @@ object LinkerdBuild extends Base {
   val telemetryStatsD = Telemetry.statsd
   val telemetryTracelog = Telemetry.tracelog
   val telemetryZipkin = Telemetry.zipkin
+  val telemetryTracekafka = Telemetry.tracekafka
 
   val namer = Namer.all
   val namerCore = Namer.core
@@ -867,6 +886,7 @@ object LinkerdBuild extends Base {
   val namerIstio = Namer.istio
   val namerMarathon = Namer.marathon
   val namerServersets = Namer.serversets
+  val namerCuratorSD = Namer.curatorSD
   val namerZkLeader = Namer.zkLeader
   val namerRancher = Namer.rancher
 
@@ -913,6 +933,7 @@ object LinkerdBuild extends Base {
   val linkerdProtocolThriftMux = Linkerd.Protocol.thriftMux
   val linkerdAnnouncer = Linkerd.Announcer.all
   val linkerdAnnouncerServersets = Linkerd.Announcer.serversets
+  val linkerdAnnouncerCuratorsd = Linkerd.Announcer.curatorSD
   val linkerdTls = Linkerd.tls
   val linkerdFailureAccrual = Linkerd.failureAccrual
 
