@@ -70,4 +70,17 @@ object Deps {
 
   // dnsjava
   val dnsJava = "dnsjava" % "dnsjava" % "2.1.8"
+
+  // curator service discovery
+  val curatorSD = "org.apache.curator" % "curator-x-discovery" % "4.0.0" exclude("org.apache.zookeeper", "zookeeper")
+
+  val zookeeper = "org.apache.zookeeper" % "zookeeper" % "3.4.11"
+
+  // Medallia service discovery, not transitive for now because it depends on kafka which has an incompatible scala version
+  // Dependencies are obtained from curatorSD at the moment
+  // We should decouple service discovery in rpc-library from everything else
+  val rpcLibrary = "com.medallia" % "rpc-library" % "2.1.3" intransitive()
+
+  // kafka
+  val kafka = "org.apache.kafka" % "kafka_2.12" % "0.10.1.1"
 }
