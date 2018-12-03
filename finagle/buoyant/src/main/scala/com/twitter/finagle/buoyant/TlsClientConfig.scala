@@ -4,7 +4,7 @@ import java.io._
 import com.twitter.finagle.Stack
 import com.twitter.finagle.netty4.ssl.client.Netty4ClientEngineFactory
 import com.twitter.finagle.ssl.{KeyCredentials, Protocols, TrustCredentials}
-import com.twitter.finagle.ssl.client.{SslClientConfiguration, SslClientEngineFactory}
+import com.twitter.finagle.ssl.client.{SslClientConfiguration, SslClientEngineFactory, SslClientSessionVerifier}
 import com.twitter.finagle.transport.Transport
 import com.twitter.io.StreamIO
 import scala.util.control.NoStackTrace
@@ -29,7 +29,8 @@ case class TlsClientConfig(
         protocols = enabledProtocols.map(Protocols.Enabled).getOrElse(Protocols.Unspecified)
       )
       Stack.Params.empty + Transport.ClientSsl(Some(tlsConfig)) +
-        SslClientEngineFactory.Param(Netty4ClientEngineFactory())
+        SslClientEngineFactory.Param(Netty4ClientEngineFactory()) +
+        SslClientSessionVerifier.Param(IpSslClientSessionVerifier)
 
     case TlsClientConfig(_, _, Some(cn), Some(certs), Some(certsBundle), _, _) =>
       val msg = "Both trustCerts and trustCertsBundle have been set. Please use only trustCertsBundle."
