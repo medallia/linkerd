@@ -198,8 +198,7 @@ object LinkerdBuild extends Base {
       .dependsOn(configCore)
       .withTwitterLib(Deps.finagle("core"))
       .withTwitterLib(Deps.finagle("stats"))
-//      .withTwitterLib(Deps.finagle("zipkin-core"))
-//      .withTwitterLib(Deps.finagle("zipkin"))
+      .withTwitterLib(Deps.finagle("zipkin-core"))
       .withTests()
 
     val adminMetricsExport = projectDir("telemetry/admin-metrics-export")
@@ -235,14 +234,12 @@ object LinkerdBuild extends Base {
       .dependsOn(core, Router.core)
       .withTests()
 
-    // val tracekafka = projectDir("telemetry/trace-kafka")
-    //   .withTwitterLibs(Deps.finagle("zipkin-core"), Deps.finagle("zipkin-scribe"))
-    //     .settings(Seq(scalacOptions -= "-Xfatal-warnings"))
-    //   .dependsOn(core)
-    //   .withLib(Deps.kafka)
+    val tracekafka = projectDir("telemetry/trace-kafka")
+      .withTwitterLibs(Deps.finagle("zipkin-core"))
+      .dependsOn(core)
+      .withLib(Deps.kafka)
 
-//tracekafka,
-    val all = aggregateDir("telemetry", adminMetricsExport, core, influxdb, prometheus, recentRequests, statsd, tracelog, zipkin)
+    val all = aggregateDir("telemetry", adminMetricsExport, core, influxdb, prometheus, recentRequests, statsd, tracelog, zipkin, tracekafka)
   }
 
   val ConfigFileRE = """^(.*)\.yaml$""".r
@@ -777,6 +774,7 @@ object LinkerdBuild extends Base {
       Protocol.h2, Protocol.http, Protocol.mux, Protocol.thrift, Protocol.thriftMux,
       Announcer.serversets, Announcer.curatorSD,
       Telemetry.adminMetricsExport, Telemetry.core, Telemetry.influxdb, Telemetry.prometheus, Telemetry.recentRequests, Telemetry.statsd, Telemetry.tracelog, Telemetry.zipkin,
+      Telemetry.tracekafka,
       tls,
       failureAccrual
     )
@@ -875,7 +873,7 @@ object LinkerdBuild extends Base {
   val telemetryStatsD = Telemetry.statsd
   val telemetryTracelog = Telemetry.tracelog
   val telemetryZipkin = Telemetry.zipkin
-  // val telemetryTracekafka = Telemetry.tracekafka
+  val telemetryTracekafka = Telemetry.tracekafka
 
   val namer = Namer.all
   val namerCore = Namer.core
