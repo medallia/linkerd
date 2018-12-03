@@ -1,10 +1,12 @@
 package io.buoyant.linkerd.protocol.http
 
 import com.fasterxml.jackson.annotation.JsonIgnore
-import com.twitter.finagle.{Dtab, Path}
+import com.twitter.finagle.{Dtab, Path, Stack}
+import com.twitter.finagle.http.Request
 import io.buoyant.linkerd.IdentifierInitializer
 import io.buoyant.linkerd.protocol.HttpIdentifierConfig
 import io.buoyant.router.http.EnvTenantHostIdentifier
+import io.buoyant.router.RoutingFactory.Identifier
 
 class EnvTenantHostIdentifierInitializer extends IdentifierInitializer {
   val configClass = classOf[EnvTenantHostIdentifierConfig]
@@ -20,9 +22,9 @@ object EnvTenantHostIdentifierConfig {
 class EnvTenantHostIdentifierConfig extends HttpIdentifierConfig {
   val defaultTenant: Option[String] = None
 
-  @JsonIgnore
   override def newIdentifier(
     prefix: Path,
-    baseDtab: () => Dtab = () => Dtab.base
-  ) = EnvTenantHostIdentifier.mk(prefix, baseDtab, defaultTenant)
+    baseDtab: () => Dtab = () => Dtab.base,
+    routerParams: Stack.Params = Stack.Params.empty
+  ): Identifier[Request] = EnvTenantHostIdentifier.mk(prefix, baseDtab, defaultTenant)
 }
