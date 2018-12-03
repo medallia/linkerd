@@ -198,8 +198,8 @@ object LinkerdBuild extends Base {
       .dependsOn(configCore)
       .withTwitterLib(Deps.finagle("core"))
       .withTwitterLib(Deps.finagle("stats"))
-      .withTwitterLib(Deps.finagle("zipkin-core"))
-      .withTwitterLib(Deps.finagle("zipkin"))
+//      .withTwitterLib(Deps.finagle("zipkin-core"))
+//      .withTwitterLib(Deps.finagle("zipkin"))
       .withTests()
 
     val adminMetricsExport = projectDir("telemetry/admin-metrics-export")
@@ -235,13 +235,14 @@ object LinkerdBuild extends Base {
       .dependsOn(core, Router.core)
       .withTests()
 
-    val tracekafka = projectDir("telemetry/trace-kafka")
-      .dependsOn(core)
-      .withTwitterLib(Deps.finagle("zipkin-core"))
-      .withTwitterLib(Deps.finagle("zipkin"))
-      .withLib(Deps.kafka)
+    // val tracekafka = projectDir("telemetry/trace-kafka")
+    //   .withTwitterLibs(Deps.finagle("zipkin-core"), Deps.finagle("zipkin-scribe"))
+    //     .settings(Seq(scalacOptions -= "-Xfatal-warnings"))
+    //   .dependsOn(core)
+    //   .withLib(Deps.kafka)
 
-    val all = aggregateDir("telemetry", adminMetricsExport, core, influxdb, prometheus, recentRequests, statsd, tracelog, tracekafka, zipkin)
+//tracekafka,
+    val all = aggregateDir("telemetry", adminMetricsExport, core, influxdb, prometheus, recentRequests, statsd, tracelog, zipkin)
   }
 
   val ConfigFileRE = """^(.*)\.yaml$""".r
@@ -690,7 +691,7 @@ object LinkerdBuild extends Base {
       .dependsOn(Protocol.thrift % "test", Interpreter.perHost % "test")
 
     val main = projectDir("linkerd/main")
-      .dependsOn(admin, configCore, core, Protocol.http % "e2e", Interpreter.namerd % "e2e", Interpreter.perHost % "e2e", Telemetry.tracekafka)
+      .dependsOn(admin, configCore, core, Protocol.http % "e2e", Interpreter.namerd % "e2e", Interpreter.perHost % "e2e")
       .withTwitterLib(Deps.twitterServer)
       .withLibs(Deps.jacksonCore, Deps.jacksonDatabind, Deps.jacksonYaml)
       .withBuildProperties("io/buoyant/linkerd")
@@ -775,7 +776,7 @@ object LinkerdBuild extends Base {
       Interpreter.fs, Interpreter.k8s, Interpreter.istio, Interpreter.mesh, Interpreter.namerd, Interpreter.perHost, Interpreter.subnet, Interpreter.consul,
       Protocol.h2, Protocol.http, Protocol.mux, Protocol.thrift, Protocol.thriftMux,
       Announcer.serversets, Announcer.curatorSD,
-      Telemetry.adminMetricsExport, Telemetry.core, Telemetry.influxdb, Telemetry.prometheus, Telemetry.recentRequests, Telemetry.statsd, Telemetry.tracelog, Telemetry.tracekafka, Telemetry.zipkin,
+      Telemetry.adminMetricsExport, Telemetry.core, Telemetry.influxdb, Telemetry.prometheus, Telemetry.recentRequests, Telemetry.statsd, Telemetry.tracelog, Telemetry.zipkin,
       tls,
       failureAccrual
     )
@@ -874,7 +875,7 @@ object LinkerdBuild extends Base {
   val telemetryStatsD = Telemetry.statsd
   val telemetryTracelog = Telemetry.tracelog
   val telemetryZipkin = Telemetry.zipkin
-  val telemetryTracekafka = Telemetry.tracekafka
+  // val telemetryTracekafka = Telemetry.tracekafka
 
   val namer = Namer.all
   val namerCore = Namer.core
