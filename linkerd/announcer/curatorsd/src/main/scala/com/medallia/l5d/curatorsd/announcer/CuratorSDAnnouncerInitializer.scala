@@ -2,7 +2,7 @@ package com.medallia.l5d.curatorsd.announcer
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.medallia.servicediscovery.ServiceDiscoveryRegistrar.RegistrationFormat
-import com.twitter.finagle.Path
+import com.twitter.finagle.{Path, Stack}
 import io.buoyant.linkerd.{Announcer, AnnouncerConfig, AnnouncerInitializer}
 
 class CuratorSDAnnouncerInitializer extends AnnouncerInitializer {
@@ -15,7 +15,7 @@ case class CuratorSDConfig(zkConnectStr: String, format: Option[String], backwar
   @JsonIgnore
   override def defaultPrefix: Path = Path.read("/com.medallia.curatorsd")
 
-  override def mk(): Announcer = new CuratorSDAnnouncer(
+  override def mk(params: Stack.Params): Announcer = new CuratorSDAnnouncer(
     zkConnectStr,
     format.map(RegistrationFormat.valueOf).getOrElse(RegistrationFormat.V2),
     backwardsCompatibility
