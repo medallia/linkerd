@@ -11,9 +11,9 @@ import sun.security.util.HostnameChecker
 import sun.security.x509.X500Name
 
 /**
-  * Custom SSLClientSessionVerifier that also verifies the resolved ip (instead of the service name)
-  *  against the CN or SANs in the certificate
-  */
+ * Custom SSLClientSessionVerifier that also verifies the resolved ip (instead of the service name)
+ *  against the CN or SANs in the certificate
+ */
 object IpSslClientSessionVerifier extends SslClientSessionVerifier {
 
   private[this] val checker = HostnameChecker.getInstance(HostnameChecker.TYPE_TLS)
