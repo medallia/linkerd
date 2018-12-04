@@ -740,6 +740,11 @@ object LinkerdBuild extends Base {
       dockerEnvPrefix := "L5D_",
       unmanagedBase := baseDirectory.value / "plugins",
       assemblyJarName in assembly := s"${name.value}-${version.value}-exec",
+      assemblyExcludedJars in assembly := {
+        // I couldn't find an easier way to exclude boringssl (which is now a dependency of finagle) from the bundle
+        val cp = (fullClasspath in assembly).value
+        cp filter {_.data.getName.contains("netty-tcnative-boringssl-static")}
+      },
       dockerTag := version.value
     )
 

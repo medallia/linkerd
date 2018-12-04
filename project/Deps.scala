@@ -14,7 +14,7 @@ object Deps {
     "com.twitter" %% s"finagle-$mod" % "18.9.1"
 
   def netty4(mod: String) =
-    "io.netty" % s"netty-$mod" % "4.1.28.Final"
+    "io.netty" % s"netty-$mod" % "4.1.32.Final"
 
   // Original tcnative version: "io.netty" % "netty-tcnative-boringssl-static" % "2.0.12.Final"
   // Since we need FIPS compliance, we're using the dynamic binding version (for centos)
