@@ -8,7 +8,6 @@ import com.twitter.finagle.ssl.client.SslClientConfiguration
 import com.twitter.finagle.{Address, SslHostVerificationException}
 import javax.net.ssl.{SSLSession, SSLSessionContext}
 import javax.security.auth.x500.X500Principal
-import javax.security.cert.X509Certificate
 import org.scalatest.FunSuite
 
 class IpSslClientSessionVerifierTest extends FunSuite {
@@ -129,7 +128,7 @@ class IpSslClientSessionVerifierTest extends FunSuite {
 
       override def removeValue(s: String): Unit = ???
 
-      override def getPeerCertificateChain: Array[X509Certificate] = ???
+      override def getPeerCertificateChain = ???
 
       override def getCreationTime: Long = ???
 
