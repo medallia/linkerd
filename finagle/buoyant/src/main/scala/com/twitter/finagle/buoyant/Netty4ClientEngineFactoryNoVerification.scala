@@ -44,7 +44,7 @@ final class Netty4ClientEngineFactoryNoVerification(allocator: ByteBufAllocator,
 
   private def removeAlgorithm(engine: javax.net.ssl.SSLEngine) {
     val sslParameters = engine.getSSLParameters
-    sslParameters.setEndpointIdentificationAlgorithm(null)
+    sslParameters.setEndpointIdentificationAlgorithm("")
     engine.setSSLParameters(sslParameters)
   }
 }
