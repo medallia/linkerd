@@ -1,12 +1,13 @@
 package com.twitter.finagle.buoyant
 
 import java.io._
+
 import com.twitter.finagle.Stack
-import com.twitter.finagle.netty4.ssl.client.Netty4ClientEngineFactory
 import com.twitter.finagle.ssl.{KeyCredentials, Protocols, TrustCredentials}
 import com.twitter.finagle.ssl.client.{SslClientConfiguration, SslClientEngineFactory, SslClientSessionVerifier}
 import com.twitter.finagle.transport.Transport
 import com.twitter.io.StreamIO
+
 import scala.util.control.NoStackTrace
 
 case class TlsClientConfig(
@@ -29,8 +30,7 @@ case class TlsClientConfig(
         protocols = enabledProtocols.map(Protocols.Enabled).getOrElse(Protocols.Unspecified)
       )
       Stack.Params.empty + Transport.ClientSsl(Some(tlsConfig)) +
-        SslClientEngineFactory.Param(Netty4ClientEngineFactory()) +
-        SslClientSessionVerifier.Param(IpSslClientSessionVerifier)
+        SslClientEngineFactory.Param(Netty4ClientEngineFactoryNoVerification())
 
     case TlsClientConfig(_, _, Some(cn), Some(certs), Some(certsBundle), _, _) =>
       val msg = "Both trustCerts and trustCertsBundle have been set. Please use only trustCertsBundle."
@@ -71,7 +71,8 @@ case class TlsClientConfig(
         protocols = enabledProtocols.map(Protocols.Enabled).getOrElse(Protocols.Unspecified)
       )
       Stack.Params.empty + Transport.ClientSsl(Some(tlsConfig)) +
-        SslClientEngineFactory.Param(Netty4ClientEngineFactory())
+        SslClientEngineFactory.Param(Netty4ClientEngineFactoryNoVerification()) +
+        SslClientSessionVerifier.Param(IpSslClientSessionVerifier)
 
     case TlsClientConfig(_, _, Some(cn), None, Some(certsBundle), clientAuth, enabledProtocols) =>
       val credentials = TrustCredentials.CertCollection(new File(certsBundle))
@@ -82,8 +83,10 @@ case class TlsClientConfig(
         keyCredentials = keyCredentials(clientAuth),
         protocols = enabledProtocols.map(Protocols.Enabled).getOrElse(Protocols.Unspecified)
       )
+
       Stack.Params.empty + Transport.ClientSsl(Some(tlsConfig)) +
-        SslClientEngineFactory.Param(Netty4ClientEngineFactory())
+        SslClientEngineFactory.Param(Netty4ClientEngineFactoryNoVerification()) +
+        SslClientSessionVerifier.Param(IpSslClientSessionVerifier)
 
     case TlsClientConfig(_, Some(false) | None, None, _, _, _, _) =>
       val msg = "tls is configured with validation but `commonName` is not set"
