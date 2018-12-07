@@ -18,7 +18,7 @@ object Deps {
 
   // Original tcnative version: "io.netty" % "netty-tcnative-boringssl-static" % "2.0.12.Final"
   // Since we need FIPS compliance, we're using the dynamic binding version (for centos)
-  val boringssl = "io.netty" % "netty-tcnative" % "2.0.12.Final" classifier "linux-x86_64-fedora" //classifier "osx-x86_64"
+  val boringssl = "io.netty" % "netty-tcnative" % "2.0.20.Final" classifier "linux-x86_64-fedora" //classifier "osx-x86_64"
 
   def zkCandidate =
     ("com.twitter.common.zookeeper" % "candidate" % "0.0.84")
