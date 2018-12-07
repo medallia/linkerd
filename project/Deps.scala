@@ -21,7 +21,13 @@ object Deps {
   def netty4(mod: String) =
     "io.netty" % s"netty-$mod" % "4.1.47.Final"
 
-  val boringssl = "io.netty" % "netty-tcnative-boringssl-static" % "2.0.30.Final"
+  // Original tcnative version: "io.netty" % "netty-tcnative-boringssl-static" % "2.0.30.Final"
+  // Since we need FIPS compliance, we're using the dynamic binding version (for centos)
+  val boringssl = "io.netty" % "netty-tcnative" % "2.0.30.Final" classifier "linux-x86_64-fedora" //classifier "osx-x86_64"
+
+  def zkCandidate =
+    ("com.twitter.common.zookeeper" % "candidate" % "0.0.84")
+      .exclude("com.twitter.common", "util")
 
   // Jackson (parsing)
   val jacksonVersion = "2.9.10"
