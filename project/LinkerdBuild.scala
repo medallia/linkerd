@@ -323,7 +323,6 @@ object LinkerdBuild extends Base {
        |   -Dsun.net.inetaddr.ttl=60                                     \
        |   -Xms${JVM_HEAP_MIN:-32M}                                      \
        |   -Xmx${JVM_HEAP_MAX:-1024M}                                    \
-       |   -XX:+AggressiveOpts                                           \
        |   -XX:+CMSParallelRemarkEnabled                                 \
        |   -XX:+CMSClassUnloadingEnabled                                 \
        |   -XX:+ScavengeBeforeFullGC                                     \
