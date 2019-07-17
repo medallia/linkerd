@@ -32,7 +32,7 @@ object Base {
 class Base extends Build {
   import Base._
 
-  val headVersion = "1.5.2-medallia-1.10.0"
+  val headVersion = "1.5.2-medallia-1.11.0"
   val openJdkVersion = "8u151"
   val openJ9Version = "jdk8u162-b12_openj9-0.8.0"
 
