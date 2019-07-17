@@ -89,6 +89,10 @@ object ResponseClassifiers {
     }
   }
 
+  /**
+   * Matches Gateway error responses (502, 503, 504), which usually are safe
+   * to be retried independently of the request method
+   */
   object GatewayErrorResponses {
 
     object Failure {
@@ -127,6 +131,9 @@ object ResponseClassifiers {
       case ReqRep(Requests.Idempotent(), RetryableResult()) => ResponseClass.RetryableFailure
     }
 
+  /**
+   * Classifies 502,503 and 504 responses as retryable failures, for all request methods.
+   */
   val RetryableAllGatewayErrorFailures: ResponseClassifier =
     ResponseClassifier.named("RetryableAllGatewayErrorFailures") {
       case ReqRep(Requests.All(), RetryableGatewayErrorResult()) => ResponseClass.RetryableFailure
