@@ -45,6 +45,12 @@ object ResponseClassifiers {
       Method.Put,
       Method.Delete
     ))
+
+    /** Matches all Http Methods **/
+    val All = Idempotent.withMethods(Set(
+      Method.Patch,
+      Method.Post
+    ))
   }
 
   /**
