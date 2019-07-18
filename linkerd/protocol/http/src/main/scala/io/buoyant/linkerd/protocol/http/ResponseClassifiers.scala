@@ -90,6 +90,39 @@ object ResponseClassifiers {
   }
 
   /**
+   * Matches Gateway error responses (502, 503, 504), which usually are safe
+   * to be retried independently of the request method
+   */
+  object GatewayErrorResponses {
+
+    object Failure {
+      def unapply(rsp: Response): Boolean = rsp.status match {
+        case Status.BadGateway | Status.ServiceUnavailable | Status.GatewayTimeout => true
+        case _ => false
+      }
+
+      // There are probably some (linkerd-generated) failures that aren't
+      // really retryable... For now just check if it's a failure.
+      object Retryable {
+        def unapply(rsp: Response): Boolean = Failure.unapply(rsp)
+      }
+    }
+  }
+
+  object RetryableGatewayErrorResult {
+    private[this] val retryableThrow: PartialFunction[Try[Nothing], Boolean] =
+      TimeoutAndWriteExceptionsOnly.orElse(ChannelClosedExceptionsOnly)
+        .orElse(FramingExceptionsOnly)
+        .orElse { case _ => false }
+
+    def unapply(rsp: Try[Any]): Boolean = rsp match {
+      case Return(GatewayErrorResponses.Failure.Retryable()) => true
+      case Throw(e) => retryableThrow(Throw(e))
+      case _ => false
+    }
+  }
+
+  /**
    * Classifies 5XX responses as failures. If the method is idempotent
    * (as described by RFC2616), it is classified as retryable.
    */
@@ -105,6 +138,14 @@ object ResponseClassifiers {
   val RetryableAllFailures: ResponseClassifier =
     ResponseClassifier.named("RetryableAllFailures") {
       case ReqRep(Requests.All(), RetryableResult()) => ResponseClass.RetryableFailure
+    }
+
+  /**
+   * Classifies 502,503 and 504 responses as retryable failures, for all request methods.
+   */
+  val RetryableAllGatewayErrorFailures: ResponseClassifier =
+    ResponseClassifier.named("RetryableAllGatewayErrorFailures") {
+      case ReqRep(Requests.All(), RetryableGatewayErrorResult()) => ResponseClass.RetryableFailure
     }
 
   /**
@@ -170,6 +211,17 @@ class RetryableAll5XXInitializer extends ResponseClassifierInitializer {
 }
 
 object RetryableAll5XXInitializer extends RetryableAll5XXInitializer
+
+class RetryableAllGatewayErrorConfig extends ResponseClassifierConfig {
+  def mk: ResponseClassifier = ResponseClassifiers.RetryableAllGatewayErrorFailures
+}
+
+class RetryableAllGatewayErrorInitializer extends ResponseClassifierInitializer {
+  val configClass = classOf[RetryableAllGatewayErrorConfig]
+  override val configId = "io.l5d.http.retryableAllGatewayError"
+}
+
+object RetryableAllGatewayErrorInitializer extends RetryableAllGatewayErrorInitializer
 
 class RetryableRead5XXConfig extends ResponseClassifierConfig {
   def mk: ResponseClassifier = ResponseClassifiers.RetryableReadFailures
