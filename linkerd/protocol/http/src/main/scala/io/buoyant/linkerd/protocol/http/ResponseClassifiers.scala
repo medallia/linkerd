@@ -90,14 +90,14 @@ object ResponseClassifiers {
   }
 
   /**
-   * Matches Gateway error responses (502, 503, 504), which usually are safe
+   * Matches Gateway error response 503, which usually is safe
    * to be retried independently of the request method
    */
   object GatewayErrorResponses {
 
     object Failure {
       def unapply(rsp: Response): Boolean = rsp.status match {
-        case Status.BadGateway | Status.ServiceUnavailable | Status.GatewayTimeout => true
+        case Status.ServiceUnavailable => true
         case _ => false
       }
 
@@ -141,7 +141,7 @@ object ResponseClassifiers {
     }
 
   /**
-   * Classifies 502,503 and 504 responses as retryable failures, for all request methods.
+   * Classifies 503 responses as retryable failures, for all request methods.
    */
   val RetryableAllGatewayErrorFailures: ResponseClassifier =
     ResponseClassifier.named("RetryableAllGatewayErrorFailures") {
