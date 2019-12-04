@@ -32,7 +32,7 @@ object Base {
 class Base extends Build {
   import Base._
 
-  val headVersion = "1.1.2-medallia-1.8.1-customResponseClassifier"
+  val headVersion = "1.1.2-medallia-1.8.2-customResponseClassifier"
 
   object Git {
     def git(arg: String, args: String*) = Process("git" +: arg +: args)
