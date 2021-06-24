@@ -207,6 +207,16 @@ For example, in order to build the 0.0.10 release of Linkerd:
   in _linkerd/target/scala-2.12/linkerd-0.0.10-exec_ and
   _namerd/target/scala-2.12/namerd-0.0.10-exec_.
 
+Medallia rpc-library is downloaded from Artifactory as seen in the following credentials file:
+
+```
+$ cat ~/.sbt/.credentials
+realm=Artifactory Realm
+host=martifactory.io
+user=mcoll@medallia.com
+password=[the same as ~/.gradle/gradle.properties]
+```
+
 #### Docker ####
 
 Each of these configurations may be used to build a docker image.

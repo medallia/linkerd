@@ -79,6 +79,7 @@ class Base extends Build {
       "typesafe" at "https://repo.typesafe.com/typesafe/releases",
       "Artifactory Realm" at "https://martifactory.io/mvn-virtual"
     ),
+    credentials += Credentials(Path.userHome / ".sbt" / ".credentials"),
     aggregate in assembly := false,
     (developTwitterDeps in Global) := { sys.env.get("TWITTER_DEVELOP") == Some("1") },
 
